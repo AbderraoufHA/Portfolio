@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "@astrojs/react": "^4.3.0",
-    "astro": "^5.13.0",
+    "astro": "^7.4.7",
     "dompurify": "^3.2.6",
     "fflate": "^0.8.3",
     "marked": "^15.0.12",
