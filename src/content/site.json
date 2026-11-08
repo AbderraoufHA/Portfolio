@@ -1,0 +1,206 @@
+{
+  "locale": "en",
+  "profile": {
+    "name": "INFO ABDOU",
+    "title": "Full-stack DEV & AI Engineer",
+    "tagline": "I design, build and ship production systems — from the first schema to the last deploy.",
+    "location": "Algeria / Biskra",
+    "timezone": "[TIMEZONE]",
+    "availability": {
+      "available": true,
+      "label": "Weekend days, Sunday to Thursday at 19:45"
+    },
+    "yearsExperience": 8,
+    "about": "I'm a freelance software engineer who works where product meets infrastructure. Most of my projects start as a vague \"we need this to be faster, cheaper, or finally reliable\" and end as a small, well-tested system that a team can own without me.\n\nI write TypeScript and Go, live in Linux, and care about boring things that make software last: clear data models, observability, and deploys nobody has to be afraid of.",
+    "cv": "/cv.pdf",
+    "avatar": "",
+    "terminalLines": ["whoami", "cat role.txt", "ls ./stack", "echo $AVAILABILITY"]
+  },
+  "socials": {
+    "github": "https://github.com/AbderraoufHA",
+    "linkedin": "https://www.linkedin.com/in/abderraouf-hachani-5810783a0/",
+    "x": "",
+    "telegram": "https://t.me/[USER]",
+    "whatsapp": "",
+    "calendly": "https://calendly.com/[USER]/intro",
+    "email": "abderraouf.abdou.bsk@gmail.com"
+  },
+  "services": [
+    {
+      "id": "product-engineering",
+      "title": "Product engineering",
+      "description": "From a Figma file or a napkin sketch to a shipped, monitored product. I take ownership of the slice end to end: UI, API, database, deploy.",
+      "deliverables": [
+        "Discovery workshop and a scoped delivery plan",
+        "Architecture and data model",
+        "Weekly increments you can click on",
+        "Handover docs, tests and a recorded walkthrough"
+      ]
+    },
+    {
+      "id": "platform-devops",
+      "title": "Platform & DevOps",
+      "description": "Pipelines that are fast, infrastructure that is boring, and alerts that only fire when a human is actually needed.",
+      "deliverables": [
+        "GitHub Actions CI/CD with preview environments",
+        "Terraform or OpenTofu modules for your stack",
+        "Kubernetes or serverless deployment",
+        "Dashboards, SLOs and on-call runbooks"
+      ]
+    },
+    {
+      "id": "performance",
+      "title": "Performance & reliability audit",
+      "description": "A focused two-week engagement: measure, find the three things that actually matter, fix them, and leave a regression guard behind.",
+      "deliverables": [
+        "Lighthouse and Core Web Vitals report",
+        "Query and API profiling",
+        "Prioritised fix list with effort estimates",
+        "Load test script and SLO baseline"
+      ]
+    },
+    {
+      "id": "rescue",
+      "title": "Rescue & modernization",
+      "description": "Inherited a codebase nobody wants to deploy? I stabilise it first, then modernise in small, reversible steps — never a big-bang rewrite.",
+      "deliverables": [
+        "Dependency and security triage",
+        "CI from zero to green",
+        "Incremental migration plan",
+        "Pairing sessions with your team"
+      ]
+    }
+  ],
+  "skills": [
+    {
+      "group": "Frontend",
+      "items": [
+        "TypeScript",
+        "React",
+        "Astro",
+        "Next.js",
+        "Tailwind CSS",
+        "Vite",
+        "WCAG 2.2",
+        "Playwright"
+      ]
+    },
+    {
+      "group": "Backend",
+      "items": ["Node.js", "Go", "Python", "PostgreSQL", "Redis", "gRPC", "REST", "Zod"]
+    },
+    {
+      "group": "DevOps",
+      "items": [
+        "Docker",
+        "Kubernetes",
+        "Argo CD",
+        "Terraform",
+        "GitHub Actions",
+        "Prometheus",
+        "Grafana",
+        "Bash"
+      ]
+    },
+    {
+      "group": "Cloud",
+      "items": [
+        "AWS",
+        "Cloudflare Workers",
+        "Fly.io",
+        "Vercel",
+        "Lambda",
+        "S3",
+        "RDS",
+        "CloudFront"
+      ]
+    },
+    {
+      "group": "Tools",
+      "items": ["Git", "Linux", "Neovim", "Vitest", "Sentry", "OpenTelemetry", "Figma", "Linear"]
+    }
+  ],
+  "experience": [
+    {
+      "company": "Independent",
+      "role": "Freelance Software Engineer & Consultant",
+      "period": "2023 — Present",
+      "summary": "Product engineering, platform work and audits for teams between seed stage and series B. Usually one engagement at a time, three to six months long.",
+      "highlights": [
+        "Shipped 11 client projects; 9 are still running without me",
+        "Cut a client's cloud bill by 38% by consolidating workers and cutting idle replicas",
+        "Introduced preview environments that reduced QA hand-off time from days to hours"
+      ],
+      "url": "",
+      "current": true
+    },
+    {
+      "company": "Northwind Systems",
+      "role": "Senior Platform Engineer",
+      "period": "2020 — 2023",
+      "summary": "Owned the deployment platform for 40 engineers: Kubernetes, Argo CD, Terraform, and the observability stack behind it.",
+      "highlights": [
+        "Migrated 60 services from VMs to EKS with zero customer-visible downtime",
+        "Built a canary analysis operator still in use today",
+        "Reduced mean deploy time from 24 minutes to 4"
+      ],
+      "url": "",
+      "current": false
+    },
+    {
+      "company": "Bitfold",
+      "role": "Full-stack Developer",
+      "period": "2017 — 2020",
+      "summary": "Second engineer on a B2B analytics product. Wrote the ingestion pipeline, the reporting API and most of the frontend.",
+      "highlights": [
+        "Scaled ingest from 200 to 40k events/s",
+        "Introduced end-to-end tests and a real CI pipeline"
+      ],
+      "url": "",
+      "current": false
+    }
+  ],
+  "testimonials": [
+    {
+      "id": "t-01",
+      "quote": "He replaced a six-month roadmap item with a three-week build that we still run in production. The handover was better than most internal projects.",
+      "author": "Sample testimonial",
+      "role": "CTO",
+      "company": "Series A SaaS"
+    },
+    {
+      "id": "t-02",
+      "quote": "The audit was uncomfortable in the best way: specific, measurable, and paired with fixes rather than a slide deck. Our p95 dropped from 1.9s to 380ms.",
+      "author": "Sample testimonial",
+      "role": "Head of Engineering",
+      "company": "Marketplace"
+    }
+  ],
+  "contact": {
+    "provider": "web3forms",
+    "key": "",
+    "email": "abderraouf.abdou.bsk@gmail.com",
+    "bookingUrl": "https://calendly.com/[USER]/intro",
+    "responseTime": "I reply within one business day, usually sooner.",
+    "endpoint": ""
+  },
+  "analytics": {
+    "provider": "none",
+    "siteId": "",
+    "endpoint": ""
+  },
+  "theme": {
+    "accent": "#5eead4",
+    "mode": "dark"
+  },
+  "repo": {
+    "owner": "AbderraoufHA",
+    "name": "Portfolio",
+    "branch": "main",
+    "siteFile": "src/content/site.json",
+    "contentDir": "src/content/projects",
+    "imagesDir": "public/images/projects",
+    "imagesPublicPath": "/images/projects",
+    "demosDir": "public/demos"
+  }
+}

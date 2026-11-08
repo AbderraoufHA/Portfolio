@@ -1,0 +1,200 @@
+---
+import type { Project, Site } from '../lib/schema';
+import { withBase } from '../lib/utils';
+
+interface Props {
+  site: Site;
+  projects: Project[];
+}
+const { site, projects } = Astro.props;
+const email = site.socials.email || site.contact.email;
+const handle = site.profile.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+
+const sections = [
+  { label: 'work', hint: 'selected projects', href: `${withBase('/')}#work`, keywords: 'projects portfolio work' },
+  {
+    label: 'services',
+    hint: 'what I do for clients',
+    href: `${withBase('/')}#services`,
+    keywords: 'hire services consulting',
+  },
+  { label: 'stack', hint: 'skills and tools', href: `${withBase('/')}#stack`, keywords: 'skills tech stack tools' },
+  {
+    label: 'about',
+    hint: 'experience and background',
+    href: `${withBase('/')}#about`,
+    keywords: 'about experience cv',
+  },
+  { label: 'contact', hint: 'start a project', href: `${withBase('/')}#contact`, keywords: 'contact email hire' },
+  {
+    label: 'all projects',
+    hint: 'full index with filters',
+    href: withBase('/projects/'),
+    keywords: 'projects index archive',
+  },
+];
+---
+
+<dialog data-palette class="palette" aria-label="Command palette">
+  <div class="flex items-center gap-2 border-b border-line px-4 py-3">
+    <svg
+      class="h-4 w-4 shrink-0 text-muted"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      aria-hidden="true"
+    >
+      <path d="m21 21-4.3-4.3M19 11a8 8 0 1 1-16 0 8 8 0 0 1 16 0Z" stroke-linecap="round"></path>
+    </svg>
+    <input
+      type="text"
+      data-palette-input
+      class="w-full bg-transparent font-mono text-sm text-ink placeholder:text-muted/70 focus:outline-none"
+      placeholder="jump to a section, project or action…"
+      aria-label="Search sections, projects and actions"
+      autocomplete="off"
+      spellcheck="false"
+    />
+    <kbd class="hidden rounded border border-line bg-bg px-1.5 py-0.5 font-mono text-[10px] text-muted sm:block"
+      >esc</kbd
+    >
+  </div>
+
+  <div class="max-h-[52vh] overflow-y-auto p-2 scroll-thin" data-palette-list>
+    <div data-palette-group>
+      <p class="px-2 pb-1 pt-2 font-mono text-[10px] uppercase tracking-[0.16em] text-muted">navigate</p>
+      <ul class="list-none p-0">
+        {
+          sections.map((item) => (
+            <li>
+              <a href={item.href} class="palette-item" data-palette-item data-keywords={item.keywords} tabindex="-1">
+                <span class="flex items-center gap-2">
+                  <span class="font-mono text-[11px] text-accent/70">/</span>
+                  {item.label}
+                </span>
+                <span class="text-[11px] text-muted">{item.hint}</span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+
+    {
+      projects.length > 0 && (
+        <div data-palette-group>
+          <p class="px-2 pb-1 pt-3 font-mono text-[10px] uppercase tracking-[0.16em] text-muted">projects</p>
+          <ul class="list-none p-0">
+            {projects.map((project) => (
+              <li>
+                <a
+                  href={withBase(`/projects/${project.slug}/`)}
+                  class="palette-item"
+                  data-palette-item
+                  data-keywords={`${project.title} ${project.tags.join(' ')} ${project.stack.join(' ')} ${project.summary}`}
+                  tabindex="-1"
+                >
+                  <span class="truncate">{project.title}</span>
+                  <span class="shrink-0 font-mono text-[10.5px] text-muted">{project.tags[0] ?? 'project'}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )
+    }
+
+    <div data-palette-group>
+      <p class="px-2 pb-1 pt-3 font-mono text-[10px] uppercase tracking-[0.16em] text-muted">actions</p>
+      <ul class="list-none p-0">
+        <li>
+          <button
+            type="button"
+            class="palette-item"
+            data-palette-item
+            data-action="copy-email"
+            data-email={email}
+            data-keywords="copy email address contact"
+            tabindex="-1"
+          >
+            <span data-copy-label>Copy email address</span>
+            <span class="font-mono text-[10.5px] text-muted">{email}</span>
+          </button>
+        </li>
+        {
+          site.contact.bookingUrl && (
+            <li>
+              <a
+                href={site.contact.bookingUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="palette-item"
+                data-palette-item
+                data-keywords="book call calendly meeting"
+                tabindex="-1"
+              >
+                <span>Book an intro call</span>
+                <span class="text-[10.5px] text-muted">↗</span>
+              </a>
+            </li>
+          )
+        }
+        <li>
+          <button
+            type="button"
+            class="palette-item"
+            data-palette-item
+            data-action="toggle-theme"
+            data-keywords="theme dark light toggle"
+            tabindex="-1"
+          >
+            <span>Toggle theme</span>
+            <span class="text-[10.5px] text-muted">dark / light</span>
+          </button>
+        </li>
+        {
+          site.profile.cv && (
+            <li>
+              <a
+                href={withBase(site.profile.cv)}
+                download
+                class="palette-item"
+                data-palette-item
+                data-keywords="cv resume download pdf"
+                tabindex="-1"
+              >
+                <span>Download CV</span>
+                <span class="text-[10.5px] text-muted">pdf</span>
+              </a>
+            </li>
+          )
+        }
+        <li>
+          <a
+            href={`https://github.com/${site.repo.owner}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="palette-item"
+            data-palette-item
+            data-keywords="github source code"
+            tabindex="-1"
+          >
+            <span>GitHub profile</span>
+            <span class="text-[10.5px] text-muted">↗</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+
+    <p data-palette-empty hidden class="px-3 py-8 text-center text-sm text-muted">
+      Nothing matches. Try “work”, “contact” or a project name.
+    </p>
+  </div>
+
+  <div class="flex items-center justify-between border-t border-line px-4 py-2 font-mono text-[10px] text-muted">
+    <span class="hidden sm:inline">↑↓ navigate · ↵ open · esc close</span>
+    <span class="sm:hidden">tap to open</span>
+    <span>~/ {handle}</span>
+  </div>
+</dialog>

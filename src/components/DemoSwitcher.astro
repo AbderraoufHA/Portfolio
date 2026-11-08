@@ -1,0 +1,221 @@
+---
+import type { Demo, Project } from '../lib/schema';
+import { formatMonth, withBase } from '../lib/utils';
+import StatusBadge from './StatusBadge.astro';
+
+interface Props {
+  project: Project;
+}
+
+const { project } = Astro.props;
+const demos: Demo[] = project.demos;
+
+function toEmbed(url: string): { kind: 'youtube' | 'vimeo' | 'file' | 'unknown'; src: string } {
+  const yt = url.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([\w-]{6,})/i);
+  if (yt?.[1])
+    return {
+      kind: 'youtube',
+      src: `https://www.youtube-nocookie.com/embed/${yt[1]}?autoplay=1&rel=0&modestbranding=1`,
+    };
+  const vimeo = url.match(/vimeo\.com\/(?:video\/)?(\d+)/i);
+  if (vimeo?.[1]) return { kind: 'vimeo', src: `https://player.vimeo.com/video/${vimeo[1]}?autoplay=1` };
+  if (/\.(mp4|webm|ogv)(\?.*)?$/i.test(url)) return { kind: 'file', src: url };
+  return { kind: 'unknown', src: url };
+}
+
+const badgeFor = (status: Demo['status']) => (status === 'stable' ? 'stable' : status === 'beta' ? 'beta' : 'archived');
+---
+
+{
+  demos.length > 0 && (
+    <section id="demos" class="scroll-mt-24" aria-labelledby="demos-title">
+      <div class="mb-4 flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h2
+            id="demos-title"
+            class="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.18em] text-muted"
+          >
+            <span class="h-1.5 w-1.5 rounded-full bg-accent" aria-hidden="true" />
+            demo versions
+          </h2>
+          <p class="mt-1 text-[13px] text-muted">Every build is runnable. Pick a version.</p>
+        </div>
+        <span class="font-mono text-[10.5px] text-muted">{demos.length} builds</span>
+      </div>
+
+      <div data-demos class="overflow-hidden rounded-xl border border-line bg-surface">
+        <div
+          class="scroll-thin flex gap-1 overflow-x-auto border-b border-line bg-elevated/40 p-1.5"
+          role="tablist"
+          aria-label="Demo versions"
+        >
+          {demos.map((demo, index) => (
+            <button
+              type="button"
+              role="tab"
+              id={`demo-tab-${demo.id}`}
+              aria-controls={`demo-panel-${demo.id}`}
+              aria-selected={index === 0 ? 'true' : 'false'}
+              tabindex={index === 0 ? 0 : -1}
+              class="group flex shrink-0 items-center gap-2 rounded-lg px-3 py-2 font-mono text-[11.5px] text-muted transition-colors hover:text-ink aria-selected:bg-surface aria-selected:text-ink aria-selected:shadow-sm"
+            >
+              <span class="whitespace-nowrap">{demo.label}</span>
+              {demo.status !== 'stable' && (
+                <span
+                  class={`h-1.5 w-1.5 rounded-full ${demo.status === 'beta' ? 'bg-amber-400' : 'bg-slate-500'}`}
+                  aria-hidden="true"
+                />
+              )}
+            </button>
+          ))}
+        </div>
+
+        {demos.map((demo, index) => {
+          const target = demo.type === 'static-build' ? (demo.path ?? '') : (demo.url ?? '');
+          const embed = demo.type === 'video' ? toEmbed(target) : null;
+          const iframeSrc = target.startsWith('/') ? withBase(target) : target;
+          return (
+            <div
+              role="tabpanel"
+              id={`demo-panel-${demo.id}`}
+              aria-labelledby={`demo-tab-${demo.id}`}
+              hidden={index !== 0}
+              tabindex="0"
+              class="focus-visible:outline-offset-[-3px]"
+            >
+              <div class="flex flex-wrap items-center gap-x-3 gap-y-1.5 border-b border-line/70 px-4 py-3">
+                <StatusBadge status={badgeFor(demo.status) as 'stable' | 'beta' | 'archived'} />
+                <span class="font-mono text-[10.5px] uppercase tracking-wider text-muted">{demo.type}</span>
+                {demo.date && <span class="font-mono text-[10.5px] text-muted">{formatMonth(demo.date)}</span>}
+                <p class="w-full text-[12.5px] text-muted sm:ml-1 sm:w-auto sm:flex-1">{demo.description}</p>
+                <a
+                  href={iframeSrc}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="ml-auto shrink-0 font-mono text-[11px] text-muted underline-offset-4 hover:text-accent hover:underline"
+                >
+                  open ↗
+                </a>
+              </div>
+
+              {demo.type === 'live' && (
+                <div class="relative flex flex-col items-start gap-4 p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8">
+                  <div class="min-w-0">
+                    <p class="break-all font-mono text-[12px] text-accent/90">{target}</p>
+                    <p class="mt-2 max-w-md text-[13px] leading-relaxed text-muted">
+                      Opens in a new tab. No account required.
+                    </p>
+                  </div>
+                  <a href={target} target="_blank" rel="noopener noreferrer" class="btn-primary shrink-0">
+                    launch demo
+                    <span aria-hidden="true">↗</span>
+                  </a>
+                </div>
+              )}
+
+              {(demo.type === 'static-build' || demo.type === 'embed') && (
+                <div>
+                  <div class="flex items-center gap-2 border-b border-line/60 bg-[#0a0f15] px-3 py-2 font-mono text-[10px] text-white/40">
+                    <span class="flex gap-1" aria-hidden="true">
+                      <span class="h-2 w-2 rounded-full bg-white/15" />
+                      <span class="h-2 w-2 rounded-full bg-white/15" />
+                      <span class="h-2 w-2 rounded-full bg-white/15" />
+                    </span>
+                    <span class="truncate">
+                      {demo.type === 'static-build' ? target : new URL(target, 'https://x.invalid').host || target}
+                    </span>
+                    <span class="ml-auto hidden shrink-0 sm:block">sandboxed</span>
+                  </div>
+                  <iframe
+                    src={iframeSrc}
+                    title={`${demo.label} — ${project.title}`}
+                    loading="lazy"
+                    referrerpolicy="no-referrer"
+                    sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+                    class="h-[440px] w-full border-0 bg-[#080b0f] sm:h-[560px]"
+                  />
+                  <p class="border-t border-line/60 px-3 py-2 font-mono text-[10.5px] text-muted">
+                    Frame blocked?{' '}
+                    <a
+                      class="underline underline-offset-4 hover:text-accent"
+                      href={iframeSrc}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Open the demo in a new tab
+                    </a>
+                    .
+                  </p>
+                </div>
+              )}
+
+              {demo.type === 'video' && embed && embed.kind === 'unknown' && (
+                <div class="p-6">
+                  <p class="text-[13px] text-muted">
+                    Video host not recognised.{' '}
+                    <a class="underline underline-offset-4" href={target} target="_blank" rel="noopener noreferrer">
+                      Watch it here
+                    </a>
+                    .
+                  </p>
+                </div>
+              )}
+
+              {demo.type === 'video' && embed && (embed.kind === 'youtube' || embed.kind === 'vimeo') && (
+                <div class="relative aspect-video w-full overflow-hidden bg-[#0a0f15]">
+                  <img
+                    src={withBase(demo.poster ?? project.cover.src)}
+                    alt=""
+                    width={project.cover.width ?? 1600}
+                    height={project.cover.height ?? 1000}
+                    loading="lazy"
+                    decoding="async"
+                    class="h-full w-full object-cover opacity-70"
+                  />
+                  <button
+                    type="button"
+                    data-video-load={embed.src}
+                    data-video-label={`${demo.label} — ${project.title}`}
+                    class="group absolute inset-0 flex flex-col items-center justify-center gap-3 bg-gradient-to-t from-black/70 via-black/30 to-black/10 text-white transition hover:bg-black/40"
+                    aria-label={`Play ${demo.label}`}
+                  >
+                    <span class="flex h-14 w-14 items-center justify-center rounded-full border border-white/30 bg-white/10 backdrop-blur transition group-hover:scale-105 group-hover:bg-accent group-hover:text-black">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <path d="M8 5v14l11-7z" />
+                      </svg>
+                    </span>
+                    <span class="font-mono text-[11px] uppercase tracking-[0.16em]">play · {embed.kind}</span>
+                  </button>
+                </div>
+              )}
+
+              {demo.type === 'video' && embed && embed.kind === 'file' && (
+                <div class="bg-[#0a0f15]">
+                  {/* eslint-disable-next-line astro/jsx-a11y/media-has-caption -- captions are optional content; the admin health check flags local videos without a WebVTT track */}
+                  <video
+                    controls
+                    preload="metadata"
+                    playsinline
+                    poster={demo.poster ? withBase(demo.poster) : withBase(project.cover.src)}
+                    class="aspect-video w-full"
+                  >
+                    <source src={withBase(target)} />
+                    {demo.captions && (
+                      <track kind="captions" src={withBase(demo.captions)} srclang="en" label="English" default />
+                    )}
+                    Your browser does not support the video element.
+                  </video>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+      <noscript>
+        <p class="mt-2 font-mono text-[10.5px] text-muted">
+          Demo tabs need JavaScript. Direct links are in the project JSON and on the repository.
+        </p>
+      </noscript>
+    </section>
+  )
+}

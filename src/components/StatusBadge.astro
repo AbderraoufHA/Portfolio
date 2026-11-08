@@ -1,0 +1,24 @@
+---
+interface Props {
+  status: 'draft' | 'published' | 'archived' | 'stable' | 'beta' | 'live';
+  label?: string;
+  dot?: boolean;
+}
+
+const { status, label, dot = true } = Astro.props;
+
+const config: Record<string, { cls: string; text: string }> = {
+  published: { cls: 'status-live', text: 'live' },
+  live: { cls: 'status-live', text: 'live' },
+  stable: { cls: 'status-live', text: 'stable' },
+  draft: { cls: 'status-beta', text: 'draft' },
+  beta: { cls: 'status-beta', text: 'beta' },
+  archived: { cls: 'status-archived', text: 'archived' },
+};
+const entry = config[status] ?? { cls: 'status-archived', text: status };
+---
+
+<span class={`status-badge ${entry.cls}`}>
+  {dot && <span class="h-1.5 w-1.5 rounded-full bg-current" aria-hidden="true" />}
+  {label ?? entry.text}
+</span>

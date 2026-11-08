@@ -1,0 +1,31 @@
+---
+interface Props {
+  index?: string;
+  eyebrow?: string;
+  title: string;
+  description?: string;
+  id?: string;
+  align?: 'left' | 'between';
+}
+
+const { index, eyebrow, title, description, id, align = 'between' } = Astro.props;
+---
+
+<div class="mb-10 flex flex-col gap-4 sm:mb-12 sm:flex-row sm:items-end sm:justify-between">
+  <div class="max-w-2xl">
+    <p class="eyebrow flex items-center gap-3">
+      {index && <span class="text-accent/70">{index}</span>}
+      {index && <span class="h-px w-6 bg-line" aria-hidden="true" />}
+      <span>{eyebrow ?? title}</span>
+    </p>
+    <h2 class="mt-3 text-2xl font-semibold tracking-tight sm:text-[1.75rem]" id={id}>{title}</h2>
+    {description && <p class="mt-3 max-w-xl text-[14.5px] leading-relaxed text-muted">{description}</p>}
+  </div>
+  {
+    align === 'between' && (
+      <div class="shrink-0 text-sm text-muted">
+        <slot name="aside" />
+      </div>
+    )
+  }
+</div>

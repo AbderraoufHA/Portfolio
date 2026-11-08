@@ -1,0 +1,65 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ProjectsSection from '../../components/ProjectsSection.astro';
+import ContactSection from '../../components/ContactSection.astro';
+import { getProjectTags, getPublishedProjects, getSite } from '../../lib/content';
+import { withBase } from '../../lib/utils';
+
+const site = getSite();
+const projects = getPublishedProjects();
+const tags = getProjectTags();
+const archived = projects.filter((p) => p.status === 'archived');
+
+const description = `Every case study on the ${site.profile.name} bench: ${projects
+  .slice(0, 3)
+  .map((p) => p.title)
+  .join(', ')} and more.`;
+---
+
+<BaseLayout
+  title="All projects"
+  description={description}
+  canonicalPath={withBase('/projects/')}
+  jsonLd={[
+    {
+      '@type': 'CollectionPage',
+      name: 'All projects',
+      description,
+      url: new URL(withBase('/projects/'), Astro.site).toString(),
+      mainEntity: {
+        '@type': 'ItemList',
+        itemListElement: projects.map((project, index) => ({
+          '@type': 'ListItem',
+          position: index + 1,
+          name: project.title,
+          url: new URL(withBase(`/projects/${project.slug}/`), Astro.site).toString(),
+        })),
+      },
+    },
+  ]}
+>
+  <div class="border-b border-line/60">
+    <div class="shell py-12 sm:py-16">
+      <p class="eyebrow"><span class="text-accent/70">~/</span> projects</p>
+      <h1 class="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">Everything I have written up</h1>
+      <p class="mt-3 max-w-2xl text-[14.5px] leading-relaxed text-muted">
+        {projects.length} published case studies, newest work first. Each one is a real engagement with the numbers that came
+        out of it. {
+          archived.length > 0 &&
+            `${archived.length} older project${archived.length === 1 ? ' is' : 's are'} marked archived.`
+        }
+      </p>
+    </div>
+  </div>
+
+  <ProjectsSection
+    projects={projects}
+    tags={tags}
+    title="Project index"
+    description="Filter by tag or search by name, stack and summary."
+    index="01"
+    allHref={withBase('/')}
+  />
+
+  <ContactSection site={site} index="02" />
+</BaseLayout>

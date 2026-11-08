@@ -1,0 +1,47 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getSite } from '../lib/content';
+import { withBase } from '../lib/utils';
+
+const site = getSite();
+---
+
+<BaseLayout title="404 — not found" description="That page does not exist. Here is the way back." noindex>
+  <div class="shell flex min-h-[70vh] flex-col justify-center py-20">
+    <div class="max-w-xl">
+      <p class="eyebrow"><span class="text-accent/70">$</span> curl -I {Astro.url.pathname}</p>
+      <p class="mt-2 font-mono text-sm text-red-400">HTTP/2 404</p>
+      <h1 class="mt-8 text-4xl font-semibold tracking-tight sm:text-5xl">Nothing at this path.</h1>
+      <p class="mt-4 text-[14.5px] leading-relaxed text-muted">
+        The link is dead, renamed, or was never committed. The good stuff is one click away.
+      </p>
+
+      <div class="terminal mt-8">
+        <div class="terminal-bar">
+          <span class="terminal-dot bg-[#ff5f56]"></span>
+          <span class="terminal-dot bg-[#ffbd2e]"></span>
+          <span class="terminal-dot bg-[#27c93f]"></span>
+          <span class="ml-2 font-mono text-[11px] text-white/40">bash — recovery</span>
+        </div>
+        <div class="terminal-body space-y-1">
+          <p><span class="text-accent">$</span> cd ~/portfolio</p>
+          <p><span class="text-accent">$</span> ls</p>
+          <p class="text-[#79c0ff]">projects&nbsp;&nbsp;services&nbsp;&nbsp;stack&nbsp;&nbsp;contact</p>
+          <p><span class="text-accent">$</span> <span class="animate-blink">▌</span></p>
+        </div>
+      </div>
+
+      <div class="mt-8 flex flex-wrap gap-3">
+        <a href={withBase('/')} class="btn-primary">back home</a>
+        <a href={withBase('/projects/')} class="btn-ghost">browse projects</a>
+        <a href={`${withBase('/')}#contact`} class="btn-ghost">start a project</a>
+      </div>
+      <p class="mt-6 font-mono text-[11px] text-muted">
+        Think this is a bug? <a
+          class="underline underline-offset-4 hover:text-accent"
+          href={`mailto:${site.contact.email}`}>Tell me</a
+        >.
+      </p>
+    </div>
+  </div>
+</BaseLayout>

@@ -1,0 +1,47 @@
+---
+/**
+ * Private dashboard.
+ *
+ * Static HTML + one client-only React island. The repository coordinates are baked in at
+ * build time from src/content/site.json (owner, name, branch, paths) — they are public
+ * information for a public repo, and the browser needs them before it has a token.
+ * The token itself never touches the build.
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import AdminApp from '../../admin/AdminApp';
+import { getSite } from '../../lib/content';
+import { withBase } from '../../lib/utils';
+
+const site = getSite();
+const base = import.meta.env.BASE_URL;
+const adminUrl = withBase('/admin/', base);
+
+// A placeholder repo binding cannot authenticate. Say so at build time instead of
+// shipping a dashboard that fails on the first request.
+const repoReady = site.repo.owner !== 'your-username';
+---
+
+<BaseLayout
+  title={`Admin — ${site.profile.name}`}
+  description="Private content dashboard. Not indexed, not linked from the public site."
+  canonicalPath={adminUrl}
+  noindex
+  chrome={false}
+>
+  <div class="mx-auto max-w-5xl px-4 py-16">
+    <h1 class="text-xl font-semibold tracking-tight">Admin is not configured</h1>
+    <p class="mt-2 max-w-prose text-[14px] leading-relaxed text-muted">
+      Set <code class="mono rounded border border-line bg-elevated px-1.5 py-0.5">repo.owner</code>,{' '}
+      <code class="mono rounded border border-line bg-elevated px-1.5 py-0.5">repo.name</code> and{' '}
+      <code class="mono rounded border border-line bg-elevated px-1.5 py-0.5">repo.branch</code> in{' '}
+      <code class="mono rounded border border-line bg-elevated px-1.5 py-0.5">src/content/site.json</code>, then
+      rebuild. The dashboard needs the repository coordinates before it can request a token from GitHub.
+    </p>
+    <p class="mt-4 text-[13px] text-muted">
+      Current value: <code class="mono">{site.repo.owner}/{site.repo.name}</code> on <code class="mono"
+        >{site.repo.branch}</code
+      >.
+    </p>
+  </div>
+  {repoReady && <AdminApp client:only="react" repo={site.repo} base={base} />}
+</BaseLayout>

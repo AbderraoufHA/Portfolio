@@ -1,0 +1,45 @@
+---
+import type { Site } from '../lib/schema';
+
+interface Props {
+  site: Site;
+  /** Pass spacing classes; defaults to a vertical list. */
+  class?: string;
+  showEmail?: boolean;
+}
+const { site, class: className = 'space-y-2 text-sm', showEmail = true } = Astro.props;
+
+type Entry = { label: string; href: string; external: boolean };
+const entries: Entry[] = [];
+const s = site.socials;
+if (s.github) entries.push({ label: 'github', href: s.github, external: true });
+if (s.linkedin) entries.push({ label: 'linkedin', href: s.linkedin, external: true });
+if (s.x) entries.push({ label: 'x / twitter', href: s.x, external: true });
+if (s.telegram) entries.push({ label: 'telegram', href: s.telegram, external: true });
+if (s.whatsapp) entries.push({ label: 'whatsapp', href: s.whatsapp, external: true });
+if (s.calendly) entries.push({ label: 'book a call', href: s.calendly, external: true });
+if (showEmail && (s.email || site.contact.email)) {
+  entries.push({ label: 'email', href: `mailto:${s.email || site.contact.email}`, external: false });
+}
+---
+
+<ul class={`${className} list-none p-0`}>
+  {
+    entries.map((entry) => (
+      <li>
+        <a
+          class="link-muted inline-flex items-center gap-1"
+          href={entry.href}
+          {...(entry.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+        >
+          {entry.label}
+          {entry.external && (
+            <span class="text-[10px] opacity-60" aria-hidden="true">
+              ↗
+            </span>
+          )}
+        </a>
+      </li>
+    ))
+  }
+</ul>

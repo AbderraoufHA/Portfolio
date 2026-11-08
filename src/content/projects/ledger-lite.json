@@ -1,0 +1,91 @@
+{
+  "id": "ledger-lite",
+  "slug": "ledger-lite",
+  "title": "LedgerLite — offline-first accounting",
+  "summary": "Double-entry bookkeeping for freelancers that works on a plane, reconciles in under a millisecond, and never asks you to trust a cloud.",
+  "problem": "Small accounting tools assume a connection. Freelancers in the client's user research worked from cafés, trains and client sites, and every sync conflict meant a manual re-entry. Multi-currency support was an afterthought bolted onto floats.",
+  "solution": "A local-first PWA built on an append-only ledger with CRDT merge, integer minor-unit arithmetic, and a reconciliation pass that runs in a Web Worker. Sync is optional; the app is fully usable with zero connectivity.",
+  "description": "## Context\n\nI joined as the second engineer on a small product with a clear thesis: accounting data should belong to the person who entered it. The existing app was a React frontend over a REST API with last-write-wins sync, which is exactly how you lose an invoice.\n\n## The interesting parts\n\n**Money is never a float.** Every amount is an integer in minor units plus a currency code, and every display path goes through one formatter. Rounding bugs disappeared the week we shipped it.\n\n**The ledger is append-only.** Entries are immutable; corrections are reversing entries. That single rule made the audit trail trivial and removed a whole class of update conflicts.\n\n**Sync is a CRDT.** Entries merge by ID; the balance is derived, never stored. Two devices can work offline for a week and reconcile without a conflict prompt.\n\n```ts\nconst balance = (entries: Entry[], account: string) =>\n  entries\n    .filter((e) => e.account === account)\n    .reduce((sum, e) => sum + (e.debit ?? 0) - (e.credit ?? 0), 0);\n```\n\n## Outcome\n\n- Reconciliation of 412 statement rows: **0.4 ms**.\n- Offline sessions up to **9 days** merged with zero manual fixes in beta.\n- Three currencies supported without a schema change.\n\n## Trade-off\n\nLocal-first means you cannot promise \"the server is the truth\". We made that explicit in the UI: every synced record shows its origin device and timestamp. Users trusted it more once we stopped hiding the machinery.",
+  "status": "published",
+  "featured": false,
+  "order": 2,
+  "startDate": "2025-06",
+  "endDate": "",
+  "role": "Product engineer — frontend, sync layer, reconciliation",
+  "client": "Independent SaaS",
+  "tags": ["Product", "Offline-first", "TypeScript"],
+  "stack": ["TypeScript", "React", "IndexedDB", "Service Workers", "CRDT", "Vitest"],
+  "links": {
+    "repo": "https://github.com/your-username/ledger-lite",
+    "live": "https://ledger.example.com",
+    "caseStudy": ""
+  },
+  "metrics": [
+    { "label": "Reconcile", "value": "0.4 ms" },
+    { "label": "Offline", "value": "9 days" },
+    { "label": "Currencies", "value": "3" },
+    { "label": "Bundle", "value": "48 kB" }
+  ],
+  "cover": {
+    "src": "/images/projects/ledger-lite/cover.webp",
+    "alt": "Ledger table with debit, credit and balance columns beside a cash-flow card",
+    "width": 1600,
+    "height": 1000,
+    "srcset": "/images/projects/ledger-lite/cover-640.webp 640w, /images/projects/ledger-lite/cover.webp 1600w"
+  },
+  "gallery": [
+    {
+      "src": "/images/projects/ledger-lite/gallery-1.webp",
+      "alt": "Bank statement reconciliation view with matched and exception rows",
+      "width": 1400,
+      "height": 900,
+      "caption": "Statement reconciliation",
+      "srcset": "/images/projects/ledger-lite/gallery-1-700.webp 700w, /images/projects/ledger-lite/gallery-1.webp 1400w"
+    },
+    {
+      "src": "/images/projects/ledger-lite/gallery-2.webp",
+      "alt": "Offline sync queue showing synced and queued entries",
+      "width": 1400,
+      "height": 900,
+      "caption": "Sync queue after an offline session",
+      "srcset": "/images/projects/ledger-lite/gallery-2-700.webp 700w, /images/projects/ledger-lite/gallery-2.webp 1400w"
+    }
+  ],
+  "demos": [
+    {
+      "id": "sandbox",
+      "label": "Sandbox — try the ledger",
+      "type": "embed",
+      "url": "/demos/ledger-lite/sandbox/index.html",
+      "description": "A sandboxed playground with sample data. Add an entry and watch the balance derive.",
+      "status": "stable",
+      "date": "2026-02-18"
+    },
+    {
+      "id": "static-app",
+      "label": "v0.9.2 — full static app",
+      "type": "static-build",
+      "path": "/demos/ledger-lite/0.9.2/index.html",
+      "description": "Complete build with local storage. Data stays in your browser.",
+      "status": "beta",
+      "date": "2026-02-02"
+    },
+    {
+      "id": "demo-video",
+      "label": "90-second overview",
+      "type": "video",
+      "url": "https://vimeo.com/76979871",
+      "description": "Offline entry, merge, then reconciliation.",
+      "poster": "/images/projects/ledger-lite/gallery-2.webp",
+      "status": "stable",
+      "date": "2026-01-22"
+    }
+  ],
+  "seo": {
+    "title": "LedgerLite — offline-first accounting case study",
+    "description": "A local-first double-entry ledger with CRDT sync, integer money arithmetic and 0.4ms reconciliation.",
+    "ogImage": "/images/projects/ledger-lite/cover.webp"
+  },
+  "createdAt": "2025-06-10T08:15:00.000Z",
+  "updatedAt": "2026-02-18T11:20:00.000Z"
+}

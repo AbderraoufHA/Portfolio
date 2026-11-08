@@ -1,0 +1,113 @@
+---
+import type { Project } from '../lib/schema';
+import { withBase } from '../lib/utils';
+import ProjectCard from './ProjectCard.astro';
+import SectionHeading from './SectionHeading.astro';
+
+interface Props {
+  projects: Project[];
+  tags: string[];
+  title?: string;
+  description?: string;
+  showFilters?: boolean;
+  limit?: number;
+  allHref?: string;
+  index?: string;
+}
+
+const {
+  projects,
+  tags,
+  title = 'Selected projects',
+  description = 'Case studies with the problem, the build and the measured result — not just screenshots.',
+  showFilters = true,
+  limit,
+  allHref = withBase('/projects/'),
+  index = '01',
+} = Astro.props;
+
+const visible = typeof limit === 'number' ? projects.slice(0, limit) : projects;
+---
+
+<section id="work" class="section scroll-mt-24" aria-labelledby="work-title">
+  <div class="shell">
+    <SectionHeading index={index} eyebrow="work" title={title} description={description} id="work-title">
+      <a slot="aside" href={allHref} class="btn-link font-mono text-[12px]">
+        all projects <span class="text-[10px]" aria-hidden="true">→</span>
+      </a>
+    </SectionHeading>
+
+    {
+      showFilters && (
+        <div
+          data-project-filter
+          class="mb-8 flex flex-col gap-4 border-b border-line/70 pb-5 sm:flex-row sm:items-center sm:justify-between"
+        >
+          <div class="flex flex-wrap items-center gap-1.5" role="group" aria-label="Filter projects by tag">
+            <button
+              type="button"
+              data-filter-tag="all"
+              aria-pressed="true"
+              class="rounded-full border border-line px-3 py-1.5 font-mono text-[11px] text-muted transition-colors hover:border-accent/40 hover:text-ink aria-pressed:border-accent/50 aria-pressed:bg-accent/10 aria-pressed:text-accent"
+            >
+              all
+            </button>
+            {tags.map((tag) => (
+              <button
+                type="button"
+                data-filter-tag={tag}
+                aria-pressed="false"
+                class="rounded-full border border-line px-3 py-1.5 font-mono text-[11px] text-muted transition-colors hover:border-accent/40 hover:text-ink aria-pressed:border-accent/50 aria-pressed:bg-accent/10 aria-pressed:text-accent"
+              >
+                {tag}
+              </button>
+            ))}
+          </div>
+
+          <div class="flex items-center gap-3">
+            <label class="relative block">
+              <span class="sr-only">Search projects</span>
+              <svg
+                class="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                aria-hidden="true"
+              >
+                <path d="m21 21-4.3-4.3M19 11a8 8 0 1 1-16 0 8 8 0 0 1 16 0Z" stroke-linecap="round" />
+              </svg>
+              <input
+                type="search"
+                data-project-search
+                placeholder="search…"
+                aria-label="Search projects"
+                class="w-full rounded-lg border border-line bg-surface py-2 pl-9 pr-3 font-mono text-[12px] text-ink placeholder:text-muted/60 focus:border-accent/60 focus:outline-none focus:ring-2 focus:ring-accent/20 sm:w-56"
+              />
+            </label>
+            <p class="shrink-0 font-mono text-[11px] text-muted" aria-live="polite">
+              <span data-project-count>{visible.length}</span>/<span>{visible.length}</span>
+            </p>
+          </div>
+        </div>
+      )
+    }
+
+    <ul class="grid list-none grid-cols-1 gap-5 p-0 sm:grid-cols-2 lg:grid-cols-3">
+      {
+        visible.map((project, index) => (
+          <li>
+            <ProjectCard project={project} index={index} eager={index === 0} />
+          </li>
+        ))
+      }
+    </ul>
+
+    <div data-project-empty hidden class="rounded-xl border border-dashed border-line px-6 py-14 text-center">
+      <p class="font-mono text-sm text-muted">no projects match that filter.</p>
+      <p class="mt-1 text-sm text-muted">
+        Try another tag, or <a class="btn-link" href={withBase('/projects/')}>browse everything</a>.
+      </p>
+    </div>
+  </div>
+</section>

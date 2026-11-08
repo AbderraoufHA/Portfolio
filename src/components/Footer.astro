@@ -1,0 +1,91 @@
+---
+import type { Site } from '../lib/schema';
+import { withBase } from '../lib/utils';
+import SocialLinks from './SocialLinks.astro';
+
+interface Props {
+  site: Site;
+}
+const { site } = Astro.props;
+const year = new Date().getFullYear();
+const repoUrl = `https://github.com/${site.repo.owner}/${site.repo.name}`;
+---
+
+<footer class="border-t border-line bg-surface/40">
+  <div class="shell py-12 pb-24 md:pb-12">
+    <div class="flex flex-col gap-10 md:flex-row md:items-start md:justify-between">
+      <div class="max-w-sm">
+        <a href={withBase('/')} class="font-mono text-sm font-semibold">
+          <span class="text-muted">~/</span>{site.profile.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}
+        </a>
+        <p class="mt-3 text-sm leading-relaxed text-muted">{site.profile.tagline}</p>
+        <p class="mt-4 font-mono text-[11px] uppercase tracking-[0.18em] text-muted/80">
+          {site.profile.location} · {site.profile.timezone}
+        </p>
+      </div>
+
+      <div class="grid grid-cols-2 gap-8 sm:grid-cols-3">
+        <div>
+          <h2 class="eyebrow mb-3">site</h2>
+          <ul class="space-y-2 text-sm">
+            <li><a class="link-muted" href={`${withBase('/')}#work`}>work</a></li>
+            <li><a class="link-muted" href={`${withBase('/projects/')}`}>all projects</a></li>
+            <li><a class="link-muted" href={`${withBase('/')}#services`}>services</a></li>
+            <li><a class="link-muted" href={`${withBase('/')}#contact`}>contact</a></li>
+          </ul>
+        </div>
+        <div>
+          <h2 class="eyebrow mb-3">elsewhere</h2>
+          <SocialLinks site={site} class="space-y-2 text-sm" />
+        </div>
+        <div>
+          <h2 class="eyebrow mb-3">files</h2>
+          <ul class="space-y-2 text-sm">
+            {
+              site.profile.cv && (
+                <li>
+                  <a class="link-muted inline-flex items-center gap-1.5" href={withBase(site.profile.cv)} download>
+                    cv.pdf
+                    <svg
+                      width="11"
+                      height="11"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      aria-hidden="true"
+                    >
+                      <path d="M12 3v12m0 0 4-4m-4 4-4-4M5 21h14" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                  </a>
+                </li>
+              )
+            }
+            <li><a class="link-muted" href={withBase('/rss.xml')}>rss</a></li>
+            <li><a class="link-muted" href={withBase('/sitemap.xml')}>sitemap</a></li>
+            <li>
+              <a
+                class="link-muted inline-flex items-center gap-1"
+                href={repoUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                source
+                <span aria-hidden="true">↗</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="mt-12 flex flex-col gap-2 border-t border-line/70 pt-6 text-[11.5px] text-muted sm:flex-row sm:items-center sm:justify-between"
+    >
+      <p class="font-mono">© {year} {site.profile.name}. All rights reserved.</p>
+      <p class="font-mono">
+        static html · astro · content in git · <span class="text-accent/80">no trackers by default</span>
+      </p>
+    </div>
+  </div>
+</footer>

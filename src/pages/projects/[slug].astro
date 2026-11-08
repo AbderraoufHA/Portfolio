@@ -1,0 +1,344 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Gallery from '../../components/Gallery.astro';
+import DemoSwitcher from '../../components/DemoSwitcher.astro';
+import StatusBadge from '../../components/StatusBadge.astro';
+import { getAllProjects, getProjectNeighbours, getSite } from '../../lib/content';
+import { renderMarkdown } from '../../lib/markdown';
+import { absoluteUrl, formatRange, withBase, withBaseSrcset } from '../../lib/utils';
+import type { Project } from '../../lib/schema';
+
+export function getStaticPaths() {
+  return getAllProjects()
+    .filter((project) => project.status !== 'draft')
+    .map((project) => ({ params: { slug: project.slug }, props: { project } }));
+}
+
+interface Props {
+  project: Project;
+}
+
+const { project } = Astro.props;
+const site = getSite();
+const base = import.meta.env.BASE_URL;
+const canonicalPath = withBase(`/projects/${project.slug}/`);
+const canonical = new URL(canonicalPath, Astro.site).toString();
+const description = project.seo.description || project.summary;
+const ogImage = project.seo.ogImage || project.cover.src;
+const bodyHtml = renderMarkdown(project.description);
+const neighbours = getProjectNeighbours(project.slug);
+const primaryDemo = project.demos.find(
+  (demo) => demo.type === 'live' || demo.type === 'static-build' || demo.type === 'embed',
+);
+const primaryHref = primaryDemo
+  ? primaryDemo.type === 'static-build' || (primaryDemo.type === 'embed' && primaryDemo.url?.startsWith('/'))
+    ? withBase(primaryDemo.path ?? primaryDemo.url ?? '')
+    : (primaryDemo.url ?? '')
+  : null;
+const primaryLabel = primaryDemo?.type === 'live' ? 'visit live site' : 'launch demo';
+
+const statusLabel = project.status === 'published' ? 'published' : project.status;
+const jsonLd = {
+  '@type': 'CreativeWork',
+  '@id': `${canonical}#work`,
+  name: project.title,
+  headline: project.title,
+  description,
+  url: canonical,
+  image: absoluteUrl(withBase(ogImage), Astro.site?.toString()),
+  dateCreated: project.startDate,
+  dateModified: project.updatedAt,
+  inLanguage: site.locale,
+  genre: project.tags.join(', '),
+  keywords: project.stack.join(', '),
+  author: { '@type': 'Person', name: site.profile.name, url: Astro.site?.toString() },
+  ...(project.client ? { sourceOrganization: { '@type': 'Organization', name: project.client } } : {}),
+  ...(project.metrics.length > 0
+    ? {
+        measuredProperty: project.metrics.map((metric) => ({
+          '@type': 'PropertyValue',
+          name: metric.label,
+          value: metric.value,
+        })),
+      }
+    : {}),
+};
+---
+
+<BaseLayout
+  title={project.seo.title || project.title}
+  description={description}
+  canonicalPath={canonicalPath}
+  image={ogImage}
+  type="article"
+  jsonLd={[jsonLd]}
+>
+  <nav aria-label="Breadcrumb" class="shell pt-6">
+    <ol class="flex list-none items-center gap-2 p-0 font-mono text-[11px] text-muted">
+      <li><a class="hover:text-ink" href={withBase('/')}>~</a></li>
+      <li aria-hidden="true">/</li>
+      <li><a class="hover:text-ink" href={withBase('/projects/')}>projects</a></li>
+      <li aria-hidden="true">/</li>
+      <li aria-current="page" class="truncate text-ink/80">{project.slug}</li>
+    </ol>
+  </nav>
+
+  {
+    project.status === 'archived' && (
+      <div class="shell mt-6">
+        <p class="rounded-lg border border-line bg-elevated/60 px-4 py-3 font-mono text-[11.5px] text-muted">
+          archived case study — kept online for reference; links may point to retired systems.
+        </p>
+      </div>
+    )
+  }
+
+  <header class="shell pb-10 pt-8 sm:pb-12 sm:pt-10">
+    <div class="flex flex-wrap items-center gap-2">
+      <StatusBadge status={project.status} label={statusLabel} />
+      {project.featured && <span class="status-badge border-accent/30 bg-accent/10 text-accent">★ featured</span>}
+      {project.tags.map((tag) => <span class="chip">#{tag}</span>)}
+    </div>
+
+    <h1 class="mt-5 max-w-4xl text-[2rem] font-semibold leading-[1.1] tracking-[-0.03em] sm:text-[2.7rem]">
+      {project.title}
+    </h1>
+    <p class="mt-4 max-w-2xl text-[15px] leading-relaxed text-muted">{project.summary}</p>
+
+    <div class="mt-7 flex flex-wrap items-center gap-3">
+      {
+        primaryHref && primaryDemo && (
+          <a href={primaryHref} target="_blank" rel="noopener noreferrer" class="btn-primary">
+            {primaryLabel}
+            <span aria-hidden="true">↗</span>
+          </a>
+        )
+      }
+      {
+        project.links.repo && (
+          <a href={project.links.repo} target="_blank" rel="noopener noreferrer" class="btn-ghost">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M12 2a10 10 0 0 0-3.16 19.49c.5.09.68-.22.68-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34-.45-1.16-1.11-1.47-1.11-1.47-.9-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.9 1.52 2.34 1.08 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.94 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.64 0 0 .84-.27 2.75 1.02a9.5 9.5 0 0 1 5 0c1.91-1.29 2.75-1.02 2.75-1.02.55 1.37.2 2.39.1 2.64.64.7 1.03 1.59 1.03 2.68 0 3.84-2.34 4.68-4.57 4.93.36.31.68.92.68 1.85v2.74c0 .27.18.58.69.48A10 10 0 0 0 12 2Z" />
+            </svg>
+            source
+          </a>
+        )
+      }
+      {
+        project.links.live && project.links.live !== primaryHref && (
+          <a href={project.links.live} target="_blank" rel="noopener noreferrer" class="btn-ghost">
+            live site <span aria-hidden="true">↗</span>
+          </a>
+        )
+      }
+      <a href={`${withBase('/')}#contact`} class="btn-ghost"> discuss a similar build </a>
+    </div>
+
+    <dl class="mt-10 grid grid-cols-2 gap-x-6 gap-y-5 border-t border-line/70 pt-6 text-[13px] sm:grid-cols-4">
+      <div>
+        <dt class="font-mono text-[10px] uppercase tracking-[0.14em] text-muted">role</dt>
+        <dd class="mt-1 leading-snug">{project.role}</dd>
+      </div>
+      <div>
+        <dt class="font-mono text-[10px] uppercase tracking-[0.14em] text-muted">timeline</dt>
+        <dd class="mt-1 font-mono text-[12px]">{formatRange(project.startDate, project.endDate, site.locale)}</dd>
+      </div>
+      <div>
+        <dt class="font-mono text-[10px] uppercase tracking-[0.14em] text-muted">client</dt>
+        <dd class="mt-1">{project.client || 'Under NDA'}</dd>
+      </div>
+      <div>
+        <dt class="font-mono text-[10px] uppercase tracking-[0.14em] text-muted">stack</dt>
+        <dd class="mt-1 font-mono text-[11.5px] leading-relaxed text-muted">
+          {project.stack.slice(0, 3).join(', ')}{project.stack.length > 3 ? ` +${project.stack.length - 3}` : ''}
+        </dd>
+      </div>
+    </dl>
+  </header>
+
+  <div class="shell">
+    <figure class="overflow-hidden rounded-xl border border-line bg-[#0a0f15]">
+      <img
+        src={withBase(project.cover.src)}
+        srcset={withBaseSrcset(project.cover.srcset)}
+        sizes="(max-width: 1024px) 100vw, 1088px"
+        alt={project.cover.alt}
+        width={project.cover.width}
+        height={project.cover.height}
+        loading="eager"
+        fetchpriority="high"
+        decoding="async"
+        class="w-full"
+      />
+    </figure>
+  </div>
+
+  {
+    project.metrics.length > 0 && (
+      <div class="shell mt-8">
+        <dl class="grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-line bg-line sm:grid-cols-4">
+          {project.metrics.map((metric) => (
+            <div class="bg-surface p-4 sm:p-5">
+              <dt class="font-mono text-[10px] uppercase tracking-[0.14em] text-muted">{metric.label}</dt>
+              <dd class="mt-1.5 text-xl font-semibold tracking-tight text-ink sm:text-2xl">{metric.value}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+    )
+  }
+
+  <div class="shell mt-12 space-y-14">
+    <DemoSwitcher project={project} />
+
+    <div class="grid gap-10 lg:grid-cols-[minmax(0,1fr)_18rem] lg:gap-14">
+      <div class="min-w-0 space-y-10">
+        {
+          (project.problem || project.solution) && (
+            <div class="grid gap-4 sm:grid-cols-2">
+              {project.problem && (
+                <section class="rounded-xl border border-line bg-surface p-5" aria-labelledby="problem-title">
+                  <h2 id="problem-title" class="font-mono text-[10.5px] uppercase tracking-[0.16em] text-muted">
+                    the problem
+                  </h2>
+                  <p class="mt-3 text-[13.5px] leading-relaxed text-ink/85">{project.problem}</p>
+                </section>
+              )}
+              {project.solution && (
+                <section
+                  class="rounded-xl border border-accent/25 bg-accent/[0.04] p-5"
+                  aria-labelledby="solution-title"
+                >
+                  <h2 id="solution-title" class="font-mono text-[10.5px] uppercase tracking-[0.16em] text-accent/90">
+                    the approach
+                  </h2>
+                  <p class="mt-3 text-[13.5px] leading-relaxed text-ink/85">{project.solution}</p>
+                </section>
+              )}
+            </div>
+          )
+        }
+
+        <article class="prose-doc max-w-none" set:html={bodyHtml} />
+
+        {
+          project.architecture && (
+            <figure>
+              <figcaption class="mb-3 font-mono text-[10.5px] uppercase tracking-[0.16em] text-muted">
+                architecture
+              </figcaption>
+              <img
+                src={withBase(project.architecture.src)}
+                srcset={withBaseSrcset(project.architecture.srcset)}
+                sizes="(max-width: 1024px) 100vw, 700px"
+                alt={project.architecture.alt}
+                width={project.architecture.width}
+                height={project.architecture.height}
+                loading="lazy"
+                decoding="async"
+                class="rounded-xl border border-line"
+              />
+            </figure>
+          )
+        }
+
+        <Gallery images={project.gallery} />
+      </div>
+
+      <aside class="space-y-4 lg:sticky lg:top-24 lg:self-start">
+        <div class="rounded-xl border border-line bg-surface p-5">
+          <h2 class="font-mono text-[10.5px] uppercase tracking-[0.16em] text-muted">project facts</h2>
+          <dl class="mt-4 space-y-3 text-[12.5px]">
+            <div class="flex justify-between gap-3 border-b border-line/60 pb-3">
+              <dt class="text-muted">role</dt>
+              <dd class="text-right">{project.role}</dd>
+            </div>
+            <div class="flex justify-between gap-3 border-b border-line/60 pb-3">
+              <dt class="text-muted">period</dt>
+              <dd class="text-right font-mono text-[11.5px]">
+                {formatRange(project.startDate, project.endDate, site.locale)}
+              </dd>
+            </div>
+            {
+              project.client && (
+                <div class="flex justify-between gap-3 border-b border-line/60 pb-3">
+                  <dt class="text-muted">client</dt>
+                  <dd class="text-right">{project.client}</dd>
+                </div>
+              )
+            }
+            {
+              project.links.live && (
+                <div class="flex justify-between gap-3 border-b border-line/60 pb-3">
+                  <dt class="text-muted">live</dt>
+                  <dd class="text-right">
+                    <a class="btn-link text-[12px]" href={project.links.live} target="_blank" rel="noopener noreferrer">
+                      open ↗
+                    </a>
+                  </dd>
+                </div>
+              )
+            }
+            {
+              project.links.repo && (
+                <div class="flex justify-between gap-3 border-b border-line/60 pb-3">
+                  <dt class="text-muted">source</dt>
+                  <dd class="text-right">
+                    <a class="btn-link text-[12px]" href={project.links.repo} target="_blank" rel="noopener noreferrer">
+                      github ↗
+                    </a>
+                  </dd>
+                </div>
+              )
+            }
+            <div>
+              <dt class="mb-2 text-muted">stack</dt>
+              <dd class="flex flex-wrap gap-1.5">
+                {project.stack.map((tech) => <span class="chip">{tech}</span>)}
+              </dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="rounded-xl border border-line bg-elevated/40 p-5">
+          <p class="font-mono text-[10.5px] uppercase tracking-[0.16em] text-muted">need this?</p>
+          <p class="mt-2 text-[13px] leading-relaxed text-ink/85">
+            I take on one project at a time. If this is close to your problem, tell me what is blocking you.
+          </p>
+          <a href={`${withBase('/')}#contact`} class="btn-primary mt-4 w-full text-[12.5px]"> start a project </a>
+          <p class="mt-3 flex items-center gap-1.5 font-mono text-[10px] text-muted">
+            <span class="h-1.5 w-1.5 rounded-full bg-accent" aria-hidden="true"></span>
+            {site.profile.availability.label}
+          </p>
+        </div>
+
+        <p class="px-1 font-mono text-[10px] leading-relaxed text-muted/60">
+          last updated {new Date(project.updatedAt).toISOString().slice(0, 10)} · {base || '/'}
+        </p>
+      </aside>
+    </div>
+  </div>
+
+  {
+    neighbours && (
+      <nav aria-label="Project navigation" class="shell mt-16">
+        <div class="grid gap-3 border-t border-line pt-6 sm:grid-cols-2">
+          <a
+            href={withBase(`/projects/${neighbours.prev.slug}/`)}
+            class="group rounded-xl border border-line bg-surface p-4 transition-colors hover:border-accent/40"
+          >
+            <span class="font-mono text-[10.5px] uppercase tracking-[0.16em] text-muted">← previous</span>
+            <span class="mt-1 block text-sm font-medium group-hover:text-accent">{neighbours.prev.title}</span>
+          </a>
+          <a
+            href={withBase(`/projects/${neighbours.next.slug}/`)}
+            class="group rounded-xl border border-line bg-surface p-4 text-right transition-colors hover:border-accent/40"
+          >
+            <span class="font-mono text-[10.5px] uppercase tracking-[0.16em] text-muted">next →</span>
+            <span class="mt-1 block text-sm font-medium group-hover:text-accent">{neighbours.next.title}</span>
+          </a>
+        </div>
+      </nav>
+    )
+  }
+</BaseLayout>

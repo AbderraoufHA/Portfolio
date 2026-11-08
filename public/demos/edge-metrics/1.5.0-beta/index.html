@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>EdgeMetrics 1.5.0-beta — query explorer</title>
+    <style>
+      :root { --bg:#080b0f; --panel:#0f141b; --line:#1e2731; --ink:#e2ebf3; --muted:#8b98a6; --accent:#5eead4; color-scheme: dark; }
+      * { box-sizing: border-box; }
+      body { margin:0; min-height:100vh; background: var(--bg); color: var(--ink); font: 13px/1.5 ui-monospace, Menlo, monospace; }
+      header { display:flex; gap:10px; align-items:center; padding:14px 18px; border-bottom:1px solid var(--line); }
+      h1 { font-size:13px; margin:0; }
+      .beta { margin-left:auto; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#0a0e12; background:var(--accent); padding:3px 8px; border-radius:99px; font-weight:700; }
+      main { max-width: 980px; margin: 0 auto; padding: 18px; display:grid; gap:14px; }
+      .controls { display:flex; flex-wrap:wrap; gap:10px; }
+      label { font-size:11px; color:var(--muted); display:grid; gap:4px; text-transform:uppercase; letter-spacing:.08em; }
+      select, input, button { font:inherit; color:var(--ink); background:#101820; border:1px solid var(--line); border-radius:8px; padding:7px 10px; }
+      button { cursor:pointer; }
+      button:hover { border-color:var(--accent); }
+      .panel { border:1px solid var(--line); border-radius:12px; background:var(--panel); padding:16px; }
+      .bars { display:flex; align-items:flex-end; gap:6px; height:240px; margin-top:8px; }
+      .bar { flex:1; background:linear-gradient(180deg, var(--accent), #2dd4bf33); border-radius:4px 4px 0 0; min-height:2px; transition: height .25s ease; }
+      .out { margin-top:12px; font-size:12px; color:var(--muted); white-space:pre-wrap; }
+      .err { color:#fca5a5; }
+      @media (prefers-reduced-motion: reduce) { .bar { transition:none; } }
+    </style>
+  </head>
+  <body>
+    <header><h1>query explorer</h1><span class="beta">beta</span></header>
+    <main>
+      <form class="controls" id="form">
+        <label>metric
+          <select id="metric">
+            <option value="latency">latency p95 (ms)</option>
+            <option value="rps">requests / s</option>
+            <option value="errors">error rate (%)</option>
+          </select>
+        </label>
+        <label>region
+          <select id="region">
+            <option>eu-central</option>
+            <option>us-east</option>
+            <option>ap-south</option>
+          </select>
+        </label>
+        <label>window
+          <select id="window">
+            <option value="12">1 hour</option>
+            <option value="24" selected>2 hours</option>
+            <option value="48">4 hours</option>
+          </select>
+        </label>
+        <label style="align-self:end">
+          <span>&nbsp;</span>
+          <button type="submit">Run query</button>
+        </label>
+      </form>
+      <section class="panel" aria-live="polite">
+        <div id="summary" style="font-size:12px;color:var(--muted)">ready</div>
+        <div class="bars" id="bars" role="img" aria-label="Query result chart"></div>
+        <div class="out" id="out">Select a metric and run the query.</div>
+      </section>
+    </main>
+    <script>
+      const seed = (key) => {
+        let h = 2166136261;
+        for (const ch of key) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619); }
+        return () => { h ^= h << 13; h ^= h >>> 17; h ^= h << 5; return ((h >>> 0) / 4294967296); };
+      };
+      const form = document.getElementById('form');
+      const bars = document.getElementById('bars');
+      const out = document.getElementById('out');
+      const summary = document.getElementById('summary');
+
+      function run() {
+        const metric = document.getElementById('metric').value;
+        const region = document.getElementById('region').value;
+        const points = Number(document.getElementById('window').value);
+        const rnd = seed(metric + region + points);
+        const values = Array.from({ length: points }, () => rnd());
+        const scale = metric === 'latency' ? 120 : metric === 'rps' ? 160000 : 3;
+        bars.innerHTML = '';
+        values.forEach((v, i) => {
+          const bar = document.createElement('div');
+          bar.className = 'bar';
+          bar.style.height = Math.max(4, v * 100) + '%';
+          bar.title = `${metric} · ${region} · bucket ${i + 1}: ${(v * scale).toFixed(metric === 'rps' ? 0 : 2)}`;
+          bars.appendChild(bar);
+        });
+        const avg = values.reduce((a, b) => a + b, 0) / values.length;
+        const max = Math.max(...values);
+        summary.textContent = `${metric} · ${region} · ${points} buckets`;
+        out.textContent =
+          `avg  ${(avg * scale).toFixed(metric === 'rps' ? 0 : 2)}\n` +
+          `peak ${(max * scale).toFixed(metric === 'rps' ? 0 : 2)}\n` +
+          `merged from 3 regions · ${(Math.random() * 8 + 34).toFixed(1)} ms`;
+        out.classList.remove('err');
+      }
+
+      form.addEventListener('submit', (event) => { event.preventDefault(); run(); });
+      try { run(); } catch (error) { out.textContent = String(error); out.classList.add('err'); }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,48 @@
+---
+/** Theme toggle. Both icons are rendered; CSS shows the one matching the current theme. */
+---
+
+<button
+  type="button"
+  class="rounded-md p-2 text-muted transition-colors hover:bg-elevated hover:text-ink"
+  data-theme-toggle
+  aria-label="Switch to light theme"
+  aria-pressed="false"
+>
+  <svg
+    class="block h-4 w-4"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.8"
+    aria-hidden="true"
+    data-icon="moon"
+  >
+    <path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z" stroke-linecap="round" stroke-linejoin="round"></path>
+  </svg>
+  <svg
+    class="hidden h-4 w-4"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.8"
+    aria-hidden="true"
+    data-icon="sun"
+  >
+    <circle cx="12" cy="12" r="4"></circle>
+    <path
+      d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"
+      stroke-linecap="round"></path>
+  </svg>
+</button>
+
+<style is:inline>
+  :root[data-theme='dark'] [data-icon='sun'],
+  :root[data-theme='light'] [data-icon='moon'] {
+    display: block;
+  }
+  :root[data-theme='dark'] [data-icon='moon'],
+  :root[data-theme='light'] [data-icon='sun'] {
+    display: none;
+  }
+</style>

@@ -1,0 +1,51 @@
+---
+import type { Site } from '../lib/schema';
+import SectionHeading from './SectionHeading.astro';
+
+interface Props {
+  site: Site;
+}
+const { site } = Astro.props;
+---
+
+<section id="stack" class="section scroll-mt-24" aria-labelledby="stack-title">
+  <div class="shell">
+    <SectionHeading
+      index="03"
+      eyebrow="stack"
+      title="Tools I reach for"
+      description="Not a checklist — the things I have shipped and maintained long enough to have opinions about."
+      id="stack-title"
+    />
+
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {
+        site.skills.map((group, index) => (
+          <div
+            class:list={['rounded-xl border border-line bg-surface p-5', index === 0 && 'sm:col-span-2 lg:col-span-1']}
+          >
+            <div class="flex items-center justify-between">
+              <h3 class="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">{group.group}</h3>
+              <span class="font-mono text-[10px] text-muted/60">{String(group.items.length).padStart(2, '0')}</span>
+            </div>
+            <ul class="mt-4 flex list-none flex-wrap gap-1.5 p-0">
+              {group.items.map((item) => (
+                <li class="chip">{item}</li>
+              ))}
+            </ul>
+          </div>
+        ))
+      }
+
+      <div class="rounded-xl border border-dashed border-line/80 bg-transparent p-5">
+        <h3 class="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">also</h3>
+        <ul class="mt-4 space-y-2 font-mono text-[12px] text-muted">
+          <li class="flex items-center gap-2"><span class="text-accent/70">✓</span> code review &amp; pairing</li>
+          <li class="flex items-center gap-2"><span class="text-accent/70">✓</span> technical writing</li>
+          <li class="flex items-center gap-2"><span class="text-accent/70">✓</span> accessibility audits</li>
+          <li class="flex items-center gap-2"><span class="text-accent/70">✓</span> on-call handover</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>

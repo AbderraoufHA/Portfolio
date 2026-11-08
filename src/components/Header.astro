@@ -1,0 +1,142 @@
+---
+import type { Site } from '../lib/schema';
+import { withBase } from '../lib/utils';
+import ThemeToggle from './ThemeToggle.astro';
+
+interface Props {
+  site: Site;
+}
+
+const { site } = Astro.props;
+const handle = site.profile.name
+  .toLowerCase()
+  .replace(/[^a-z0-9]+/g, '-')
+  .replace(/^-|-$/g, '');
+
+const links = [
+  { href: `${withBase('/')}#work`, label: 'work', key: 'w' },
+  { href: `${withBase('/')}#services`, label: 'services', key: 's' },
+  { href: `${withBase('/')}#stack`, label: 'stack', key: 't' },
+  { href: `${withBase('/')}#about`, label: 'about', key: 'a' },
+  { href: `${withBase('/')}#contact`, label: 'contact', key: 'c' },
+];
+---
+
+<header class="sticky top-0 z-50 border-b border-line/70 bg-bg/85 backdrop-blur-xl">
+  <div class="shell flex h-16 items-center gap-4">
+    <a
+      href={withBase('/')}
+      class="group flex items-center gap-1 font-mono text-[13.5px] tracking-tight"
+      aria-label={`${site.profile.name} — home`}
+    >
+      <span class="text-muted transition-colors group-hover:text-muted/70">~/</span>
+      <span class="font-semibold text-ink">{handle}</span>
+      <span class="ml-1 inline-block h-3.5 w-[7px] animate-blink bg-accent/80" aria-hidden="true"></span>
+    </a>
+
+    <nav class="ml-4 hidden items-center gap-1 md:flex" aria-label="Primary">
+      {
+        links.map((link) => (
+          <a
+            href={link.href}
+            class="rounded-md px-2.5 py-1.5 font-mono text-[12.5px] text-muted transition-colors hover:bg-elevated hover:text-ink"
+          >
+            {link.label}
+          </a>
+        ))
+      }
+    </nav>
+
+    <div class="ml-auto flex items-center gap-1">
+      <button
+        type="button"
+        class="hidden items-center gap-1.5 rounded-md border border-line bg-surface/70 px-2 py-1.5 font-mono text-[11px] text-muted transition-colors hover:border-accent/40 hover:text-ink sm:flex"
+        data-palette-open
+        aria-label="Open command palette"
+        aria-haspopup="dialog"
+      >
+        <svg
+          width="12"
+          height="12"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          aria-hidden="true"
+        >
+          <path d="m21 21-4.3-4.3M19 11a8 8 0 1 1-16 0 8 8 0 0 1 16 0Z" stroke-linecap="round"></path>
+        </svg>
+        <span class="hidden lg:inline">jump to…</span>
+        <kbd class="ml-1 rounded border border-line bg-bg px-1 py-0.5 text-[10px]">⌘K</kbd>
+      </button>
+      <button
+        type="button"
+        class="rounded-md p-2 text-muted transition-colors hover:bg-elevated hover:text-ink sm:hidden"
+        data-palette-open
+        aria-label="Open command palette"
+        aria-haspopup="dialog"
+      >
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          aria-hidden="true"
+        >
+          <path d="m21 21-4.3-4.3M19 11a8 8 0 1 1-16 0 8 8 0 0 1 16 0Z" stroke-linecap="round"></path>
+        </svg>
+      </button>
+      <ThemeToggle />
+      <a
+        href={`${withBase('/')}#contact`}
+        class="ml-1 hidden items-center gap-1.5 rounded-md bg-accent px-3 py-1.5 font-mono text-[12px] font-semibold text-bg transition hover:brightness-110 sm:inline-flex"
+      >
+        hire me
+        <span aria-hidden="true">↗</span>
+      </a>
+
+      <details class="relative md:hidden" data-mobile-menu>
+        <summary
+          class="flex cursor-pointer list-none items-center gap-1.5 rounded-md border border-line px-2.5 py-1.5 font-mono text-[11px] text-muted marker:content-none hover:text-ink [&::-webkit-details-marker]:hidden"
+        >
+          menu
+          <svg
+            width="12"
+            height="12"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            aria-hidden="true"
+          >
+            <path d="M4 7h16M4 12h16M4 17h16" stroke-linecap="round"></path>
+          </svg>
+        </summary>
+        <div
+          class="absolute right-0 top-[calc(100%+0.5rem)] w-60 rounded-xl border border-line bg-surface p-2 shadow-lift"
+        >
+          <nav aria-label="Mobile">
+            <ul class="flex flex-col">
+              {
+                links.map((link) => (
+                  <li>
+                    <a
+                      href={link.href}
+                      class="flex items-center justify-between rounded-lg px-3 py-2 text-sm text-ink/90 hover:bg-elevated"
+                    >
+                      {link.label}
+                      <span class="font-mono text-[10px] text-muted">{link.key}</span>
+                    </a>
+                  </li>
+                ))
+              }
+            </ul>
+          </nav>
+          <a href={`${withBase('/')}#contact`} class="btn-primary mt-2 w-full">start a project</a>
+        </div>
+      </details>
+    </div>
+  </div>
+</header>

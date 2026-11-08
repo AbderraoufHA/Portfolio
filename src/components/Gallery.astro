@@ -1,0 +1,43 @@
+---
+import type { ProjectImage } from '../lib/schema';
+import { withBase, withBaseSrcset } from '../lib/utils';
+
+interface Props {
+  images: ProjectImage[];
+  title?: string;
+}
+
+const { images, title = 'Gallery' } = Astro.props;
+---
+
+{
+  images.length > 0 && (
+    <section aria-labelledby="gallery-title" class="scroll-mt-24">
+      <h2 id="gallery-title" class="mb-4 font-mono text-[11px] uppercase tracking-[0.18em] text-muted">
+        {title}
+      </h2>
+      <ul class:list={['grid list-none grid-cols-1 gap-4 p-0', images.length > 1 && 'sm:grid-cols-2']}>
+        {images.map((image) => (
+          <li>
+            <figure class="overflow-hidden rounded-lg border border-line bg-surface">
+              <img
+                src={withBase(image.src)}
+                srcset={withBaseSrcset(image.srcset)}
+                sizes={images.length > 1 ? '(max-width: 640px) 100vw, 400px' : '(max-width: 1024px) 100vw, 720px'}
+                alt={image.alt}
+                width={image.width}
+                height={image.height}
+                loading="lazy"
+                decoding="async"
+                class="w-full border-b border-line/70 object-cover"
+              />
+              {image.caption && (
+                <figcaption class="px-3 py-2 font-mono text-[10.5px] text-muted">{image.caption}</figcaption>
+              )}
+            </figure>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
+}

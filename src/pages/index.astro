@@ -1,0 +1,69 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Hero from '../components/Hero.astro';
+import ProjectsSection from '../components/ProjectsSection.astro';
+import ServicesSection from '../components/ServicesSection.astro';
+import SkillsSection from '../components/SkillsSection.astro';
+import AboutSection from '../components/AboutSection.astro';
+import TestimonialsSection from '../components/TestimonialsSection.astro';
+import ContactSection from '../components/ContactSection.astro';
+import { getProjectTags, getPublishedProjects, getSite } from '../lib/content';
+import { absoluteUrl, withBase } from '../lib/utils';
+
+const site = getSite();
+const projects = getPublishedProjects();
+const tags = getProjectTags();
+const { profile, socials, skills } = site;
+
+const description = `${profile.title} — ${profile.tagline} Currently ${profile.availability.label.toLowerCase()}.`;
+const siteUrl = Astro.site?.toString().replace(/\/$/, '') ?? '';
+
+const person = {
+  '@type': 'Person',
+  '@id': `${siteUrl}#person`,
+  name: profile.name,
+  jobTitle: profile.title,
+  description: profile.tagline,
+  url: siteUrl,
+  image: absoluteUrl(withBase('/images/og-default.webp'), Astro.site?.toString()),
+  email: socials.email || site.contact.email,
+  address: { '@type': 'PostalAddress', addressLocality: profile.location },
+  knowsAbout: skills.flatMap((group) => group.items),
+  sameAs: [socials.github, socials.linkedin, socials.x, socials.telegram, socials.whatsapp].filter(Boolean),
+  ...(profile.availability.available
+    ? {
+        seeks: {
+          '@type': 'Demand',
+          name: 'Freelance software engineering engagements',
+          availabilityStarts: new Date().toISOString().slice(0, 10),
+        },
+      }
+    : {}),
+};
+
+const itemList = {
+  '@type': 'ItemList',
+  name: 'Selected projects',
+  itemListElement: projects.map((project, index) => ({
+    '@type': 'ListItem',
+    position: index + 1,
+    url: absoluteUrl(withBase(`/projects/${project.slug}/`), Astro.site?.toString()),
+    name: project.title,
+  })),
+};
+---
+
+<BaseLayout
+  title={`${profile.name} — ${profile.title}`}
+  description={description}
+  type="profile"
+  jsonLd={[person, itemList]}
+>
+  <Hero site={site} projectCount={projects.length} />
+  <ProjectsSection projects={projects} tags={tags} limit={6} />
+  <ServicesSection site={site} />
+  <SkillsSection site={site} />
+  <AboutSection site={site} />
+  <TestimonialsSection site={site} />
+  <ContactSection site={site} />
+</BaseLayout>

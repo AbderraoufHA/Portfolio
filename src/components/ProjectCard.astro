@@ -1,0 +1,87 @@
+---
+import type { Project } from '../lib/schema';
+import { withBase, withBaseSrcset } from '../lib/utils';
+import StatusBadge from './StatusBadge.astro';
+
+interface Props {
+  project: Project;
+  index?: number;
+  /** eager-load the first cards for a better LCP on the home page */
+  eager?: boolean;
+}
+
+const { project, index = 0, eager = false } = Astro.props;
+const href = withBase(`/projects/${project.slug}/`);
+const firstMetric = project.metrics[0];
+const statusLabel = project.status === 'published' ? 'live' : project.status === 'archived' ? 'archived' : 'draft';
+---
+
+<article
+  class="group relative flex flex-col overflow-hidden rounded-xl border border-line bg-surface transition-[border-color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:border-accent/35 hover:shadow-glow focus-within:border-accent/60 focus-within:ring-2 focus-within:ring-accent/30"
+  data-project-card
+  data-tags={project.tags.join(' ')}
+  data-search={`${project.title} ${project.summary} ${project.tags.join(' ')} ${project.stack.join(' ')}`.toLowerCase()}
+>
+  <a href={href} class="absolute inset-0 z-10" aria-label={`Read the ${project.title} case study`}>
+    <span class="sr-only">{project.title}</span>
+  </a>
+
+  <div class="relative aspect-[16/10] overflow-hidden border-b border-line bg-[#0a0f15]">
+    <img
+      src={withBase(project.cover.src)}
+      srcset={withBaseSrcset(project.cover.srcset)}
+      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 480px"
+      alt={project.cover.alt}
+      width={project.cover.width}
+      height={project.cover.height}
+      loading={eager ? 'eager' : 'lazy'}
+      decoding="async"
+      class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+    />
+    <div class="absolute left-3 top-3 z-20">
+      <StatusBadge status={statusLabel as 'published' | 'archived' | 'draft'} label={statusLabel} />
+    </div>
+    <div
+      class="absolute right-3 top-3 z-20 rounded-md border border-white/10 bg-black/50 px-2 py-1 font-mono text-[10px] text-white/70 backdrop-blur"
+    >
+      {String(index + 1).padStart(2, '0')}
+    </div>
+  </div>
+
+  <div class="flex flex-1 flex-col p-5">
+    <div class="flex items-center gap-2 font-mono text-[10.5px] uppercase tracking-[0.12em] text-muted">
+      {project.featured && <span class="text-accent">★ featured</span>}
+      {project.featured && <span aria-hidden="true">·</span>}
+      <span>{project.tags[0] ?? 'case study'}</span>
+      <span class="ml-auto normal-case tracking-normal">{project.startDate.slice(0, 4)}</span>
+    </div>
+
+    <h3 class="mt-2 text-[1.05rem] font-semibold leading-snug tracking-tight text-ink">
+      {project.title}
+    </h3>
+    <p class="mt-2 line-clamp-2 text-[13.5px] leading-relaxed text-muted">{project.summary}</p>
+
+    <ul class="mt-4 flex list-none flex-wrap gap-1.5 p-0" aria-label="Stack">
+      {project.stack.slice(0, 4).map((tech) => <li class="chip">{tech}</li>)}
+      {project.stack.length > 4 && <li class="chip text-muted/70">+{project.stack.length - 4}</li>}
+    </ul>
+
+    <div class="mt-auto flex items-end justify-between gap-3 border-t border-line/70 pt-4">
+      {
+        firstMetric ? (
+          <p class="font-mono text-[11px] text-muted">
+            <span class="text-accent/90">{firstMetric.value}</span> {firstMetric.label}
+          </p>
+        ) : (
+          <span />
+        )
+      }
+      <span
+        class="inline-flex items-center gap-1 font-mono text-[11px] text-muted transition-colors group-hover:text-accent"
+      >
+        case study
+        <span class="transition-transform group-hover:translate-x-0.5" aria-hidden="true">→</span>
+      </span>
+    </div>
+  </div>
+</article>

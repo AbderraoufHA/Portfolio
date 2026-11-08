@@ -1,0 +1,114 @@
+{
+  "id": "edge-metrics",
+  "slug": "edge-metrics",
+  "title": "EdgeMetrics — realtime observability at the edge",
+  "summary": "Multi-region ingest and rollup pipeline that keeps p95 query latency under 60 ms at 128k requests per second.",
+  "problem": "The client's dashboard read from a single Postgres cluster in eu-central. Customers in APAC waited 2–4 seconds for a chart to render, and every product launch pushed the cluster closer to its connection limit. A rewrite was on the table; a targeted redesign was enough.",
+  "solution": "I moved aggregation to the edge: workers write compact rollups into Durable Object storage per region, and a read-only query service fans out to the three nearest regions, merging partials in memory. Raw events still land in object storage for backfill, but dashboards never touch it.",
+  "description": "## Context\n\nThe client ran a product analytics dashboard on a single Postgres primary. Ingest was fine; **reads were the problem**. Every chart executed three to five aggregate queries against tables with billions of rows, and p95 crossed two seconds for anyone outside Europe.\n\nI was brought in for six weeks to make dashboards fast without migrating the data warehouse. The constraint that shaped everything: *no loss of historical accuracy*.\n\n## What I built\n\n- **Regional ingest workers** on Cloudflare Workers, writing pre-aggregated 10-second buckets into Durable Objects.\n- **A query service** that fans out to the three closest regions, merges partial buckets, and returns a single series.\n- **A backfill path** that replays object-storage archives into the rollup store, idempotent by bucket key.\n- **The chart layer**: a small React component with virtualised points and a Web Worker for downsampling.\n\n```ts\n// merge partial rollups from N regions\nconst merged = regions\n  .flatMap((r) => r.buckets)\n  .reduce((acc, b) => {\n    const cur = acc.get(b.ts) ?? { ts: b.ts, sum: 0, count: 0 };\n    cur.sum += b.sum;\n    cur.count += b.count;\n    return acc.set(b.ts, cur);\n  }, new Map<number, Bucket>());\n```\n\n## Outcome\n\np95 dashboard query latency dropped from **1,940 ms to 42 ms** globally. Ingest cost fell 31% because rollups are written once instead of being recomputed per query. The team kept their warehouse and their SQL skills — the migration surface was three endpoints.\n\n## What I would do differently\n\nThe first version keyed buckets by wall-clock second, which made late events land in the wrong bucket during clock skew. We moved to event-time bucketing with a five-second allowed lateness window in week three. That should have been the design from day one.",
+  "status": "published",
+  "featured": true,
+  "order": 0,
+  "startDate": "2026-01",
+  "endDate": "",
+  "role": "Lead engineer — architecture, edge services, frontend",
+  "client": "B2B analytics platform",
+  "tags": ["Realtime", "Edge", "Performance"],
+  "stack": [
+    "TypeScript",
+    "Cloudflare Workers",
+    "Durable Objects",
+    "React",
+    "PostgreSQL",
+    "OpenTelemetry"
+  ],
+  "links": {
+    "repo": "https://github.com/your-username/edge-metrics",
+    "live": "https://edge.example.com",
+    "caseStudy": ""
+  },
+  "metrics": [
+    { "label": "p95 query", "value": "42 ms" },
+    { "label": "Ingest", "value": "128k/s" },
+    { "label": "Cost", "value": "−31%" },
+    { "label": "Regions", "value": "17" }
+  ],
+  "cover": {
+    "src": "/images/projects/edge-metrics/cover.webp",
+    "alt": "EdgeMetrics dashboard showing a live latency sparkline and regional health tiles",
+    "width": 1600,
+    "height": 1000,
+    "srcset": "/images/projects/edge-metrics/cover-640.webp 640w, /images/projects/edge-metrics/cover.webp 1600w"
+  },
+  "architecture": {
+    "src": "/images/projects/edge-metrics/gallery-2.webp",
+    "alt": "Architecture diagram: edge workers feed an ingest API which writes to a regional rollup store",
+    "width": 1400,
+    "height": 900,
+    "srcset": "/images/projects/edge-metrics/gallery-2-700.webp 700w, /images/projects/edge-metrics/gallery-2.webp 1400w"
+  },
+  "gallery": [
+    {
+      "src": "/images/projects/edge-metrics/gallery-1.webp",
+      "alt": "Latency dashboard with p50, p95 and p99 panels for three regions",
+      "width": 1400,
+      "height": 900,
+      "caption": "Latency overview, all regions",
+      "srcset": "/images/projects/edge-metrics/gallery-1-700.webp 700w, /images/projects/edge-metrics/gallery-1.webp 1400w"
+    },
+    {
+      "src": "/images/projects/edge-metrics/gallery-2.webp",
+      "alt": "Deployment output for seventeen regions with canary percentage",
+      "width": 1400,
+      "height": 900,
+      "caption": "Canary deploy across 17 regions",
+      "srcset": "/images/projects/edge-metrics/gallery-2-700.webp 700w, /images/projects/edge-metrics/gallery-2.webp 1400w"
+    }
+  ],
+  "demos": [
+    {
+      "id": "prod",
+      "label": "Production",
+      "type": "live",
+      "url": "https://edge.example.com",
+      "description": "Live dashboard. Read-only demo account, no signup.",
+      "status": "stable",
+      "date": "2026-05-12"
+    },
+    {
+      "id": "static-140",
+      "label": "v1.4.0 — static snapshot",
+      "type": "static-build",
+      "path": "/demos/edge-metrics/1.4.0/index.html",
+      "description": "The real dashboard UI bundled as a static build with recorded data. Runs entirely in your browser.",
+      "status": "stable",
+      "date": "2026-05-01"
+    },
+    {
+      "id": "walkthrough",
+      "label": "2-minute walkthrough",
+      "type": "video",
+      "url": "https://www.youtube.com/watch?v=aqz-KE-bpKQ",
+      "description": "A narrated pass over ingest, rollup and failover.",
+      "poster": "/images/projects/edge-metrics/gallery-1.webp",
+      "status": "stable",
+      "date": "2026-04-20"
+    },
+    {
+      "id": "beta-query",
+      "label": "v1.5.0-beta — query explorer",
+      "type": "embed",
+      "url": "/demos/edge-metrics/1.5.0-beta/index.html",
+      "description": "Work-in-progress query explorer. Expect rough edges.",
+      "status": "beta",
+      "date": "2026-06-02"
+    }
+  ],
+  "seo": {
+    "title": "EdgeMetrics — realtime observability at the edge",
+    "description": "Case study: a multi-region rollup pipeline that took p95 dashboard latency from 1.9s to 42ms at 128k requests per second.",
+    "ogImage": "/images/projects/edge-metrics/cover.webp"
+  },
+  "createdAt": "2026-01-14T09:00:00.000Z",
+  "updatedAt": "2026-06-02T16:40:00.000Z"
+}

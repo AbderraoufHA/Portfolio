@@ -1,0 +1,52 @@
+---
+import type { Site } from '../lib/schema';
+import SectionHeading from './SectionHeading.astro';
+
+interface Props {
+  site: Site;
+}
+const { site } = Astro.props;
+const items = site.testimonials;
+---
+
+{
+  items.length > 0 && (
+    <section id="testimonials" class="section scroll-mt-24" aria-labelledby="testimonials-title">
+      <div class="shell">
+        <SectionHeading
+          index="05"
+          eyebrow="references"
+          title="What clients say"
+          description="A couple of quotes from people who signed the invoices."
+          id="testimonials-title"
+        />
+        <ul class="grid list-none grid-cols-1 gap-4 p-0 md:grid-cols-2">
+          {items.map((item) => (
+            <li class="relative rounded-xl border border-line bg-surface p-6">
+              <span class="absolute right-5 top-3 font-mono text-4xl leading-none text-accent/20" aria-hidden="true">
+                &ldquo;
+              </span>
+              <blockquote class="relative">
+                <p class="text-[14.5px] leading-relaxed text-ink/90">{item.quote}</p>
+                <footer class="mt-5 flex items-center gap-3 border-t border-line/70 pt-4">
+                  <span
+                    class="flex h-8 w-8 items-center justify-center rounded-full border border-line bg-elevated font-mono text-[11px] text-accent"
+                    aria-hidden="true"
+                  >
+                    {item.author.slice(0, 2).toUpperCase()}
+                  </span>
+                  <div>
+                    <p class="text-[13px] font-medium">{item.author}</p>
+                    <p class="font-mono text-[11px] text-muted">
+                      {[item.role, item.company].filter(Boolean).join(' · ')}
+                    </p>
+                  </div>
+                </footer>
+              </blockquote>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  )
+}

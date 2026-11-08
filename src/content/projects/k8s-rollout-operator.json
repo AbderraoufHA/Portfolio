@@ -1,0 +1,88 @@
+{
+  "id": "k8s-rollout-operator",
+  "slug": "k8s-rollout-operator",
+  "title": "Canary rollout operator for Kubernetes",
+  "summary": "A Go operator that gates progressive delivery on real error-budget data instead of gut feeling — 90 days without a failed rollout.",
+  "problem": "The platform team deployed with `kubectl set image` and watched dashboards for ten minutes. Rollbacks were manual, and nobody could answer \"was the last deploy safe?\" without opening four tools.",
+  "solution": "A Kubernetes operator that owns a Rollout CRD: it shifts traffic in five steps, asks Prometheus for the canary's error rate and latency at every step, and rolls back automatically when the error budget for the window drops below a threshold.",
+  "description": "## Context\n\nForty engineers, sixty services, and a deploy process that lived in one senior engineer's head. The platform team wanted progressive delivery without adopting a full service mesh, and without asking product teams to learn a new DSL.\n\n## Design\n\nA single CRD (`Rollout`) plus an analysis template:\n\n1. **Step 1** — 5% of traffic for 2 minutes.\n2. **Step 2** — automated analysis against Prometheus (error rate, p95, saturation).\n3. **Step 3** — 25%, then 50%, then 100%, with the same gates.\n4. **Any failure** — traffic returns to the stable ReplicaSet, the rollout is marked `Degraded`, and an event is emitted for alerting.\n\nThe operator is deliberately boring: a reconcile loop, no admission webhook, no CRD versioning tricks. It reads only the metrics you point it at, so it works with any Prometheus-compatible backend.\n\n```go\n// gate on the error budget, not a fixed threshold\nbudget, err := a.errorBudget(ctx, rollout, window)\nif err != nil || budget.Remaining < rollout.Spec.MinBudget {\n    return a.rollback(ctx, rollout, \"error budget exhausted\")\n}\nreturn a.promote(ctx, rollout)\n```\n\n## Outcome\n\n- **0 failed rollouts** in 90 days across 60 services.\n- Median deploy time down from 24 minutes to 4.\n- Rollbacks now take 40 seconds and happen without a human.\n\n## Notes\n\nKubernetes operators are easy to write and hard to debug. The two things that saved the project: structured events on every state transition, and a `--dry-run` mode that prints the diff instead of applying it. Both exist because a client engineer asked for them in week two.",
+  "status": "published",
+  "featured": true,
+  "order": 1,
+  "startDate": "2025-03",
+  "endDate": "2025-11",
+  "role": "Solo engineer — design, implementation, rollout to 60 services",
+  "client": "Northwind Systems",
+  "tags": ["DevOps", "Kubernetes", "Go"],
+  "stack": ["Go", "Kubernetes", "Prometheus", "Argo CD", "Helm", "Terraform"],
+  "links": {
+    "repo": "https://github.com/your-username/k8s-rollout-operator",
+    "live": "",
+    "caseStudy": ""
+  },
+  "metrics": [
+    { "label": "Services", "value": "60" },
+    { "label": "Failed rollouts", "value": "0" },
+    { "label": "Deploy time", "value": "4 min" },
+    { "label": "Rollback", "value": "40 s" }
+  ],
+  "cover": {
+    "src": "/images/projects/k8s-rollout-operator/cover.webp",
+    "alt": "Terminal output of a canary rollout reaching a healthy state beside a pod graph",
+    "width": 1600,
+    "height": 1000,
+    "srcset": "/images/projects/k8s-rollout-operator/cover-640.webp 640w, /images/projects/k8s-rollout-operator/cover.webp 1600w"
+  },
+  "architecture": {
+    "src": "/images/projects/k8s-rollout-operator/gallery-1.webp",
+    "alt": "Canary analysis graph with five promotion steps marked as passing",
+    "width": 1400,
+    "height": 900,
+    "srcset": "/images/projects/k8s-rollout-operator/gallery-1-700.webp 700w, /images/projects/k8s-rollout-operator/gallery-1.webp 1400w"
+  },
+  "gallery": [
+    {
+      "src": "/images/projects/k8s-rollout-operator/gallery-1.webp",
+      "alt": "Canary analysis dashboard showing error rate and latency over five steps",
+      "width": 1400,
+      "height": 900,
+      "caption": "Automated canary analysis",
+      "srcset": "/images/projects/k8s-rollout-operator/gallery-1-700.webp 700w, /images/projects/k8s-rollout-operator/gallery-1.webp 1400w"
+    },
+    {
+      "src": "/images/projects/k8s-rollout-operator/gallery-2.webp",
+      "alt": "CLI dry run output showing resource diffs and a passing guardrail check",
+      "width": 1400,
+      "height": 900,
+      "caption": "Dry run before promotion",
+      "srcset": "/images/projects/k8s-rollout-operator/gallery-2-700.webp 700w, /images/projects/k8s-rollout-operator/gallery-2.webp 1400w"
+    }
+  ],
+  "demos": [
+    {
+      "id": "static-sim",
+      "label": "Rollout simulator",
+      "type": "static-build",
+      "path": "/demos/k8s-rollout-operator/simulator/index.html",
+      "description": "A browser simulation of the operator's state machine. Step through a canary or trigger a failure.",
+      "status": "stable",
+      "date": "2025-10-08"
+    },
+    {
+      "id": "repo",
+      "label": "Source & CRD reference",
+      "type": "live",
+      "url": "https://github.com/your-username/k8s-rollout-operator",
+      "description": "The public reference implementation, minus client-specific policy.",
+      "status": "stable",
+      "date": "2025-11-02"
+    }
+  ],
+  "seo": {
+    "title": "Canary rollout operator — Kubernetes case study",
+    "description": "How a small Go operator replaced manual canary deploys for 60 services: error-budget gating, 40-second rollbacks, zero failed rollouts in 90 days.",
+    "ogImage": "/images/projects/k8s-rollout-operator/cover.webp"
+  },
+  "createdAt": "2025-03-02T10:30:00.000Z",
+  "updatedAt": "2025-11-20T14:05:00.000Z"
+}

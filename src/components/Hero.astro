@@ -1,0 +1,148 @@
+---
+import type { Site } from '../lib/schema';
+
+interface Props {
+  site: Site;
+  projectCount: number;
+}
+const { site, projectCount } = Astro.props;
+const { profile, contact } = site;
+const stackGroups = site.skills
+  .map((group) => group.group.split(/[&/]/)[0]?.trim())
+  .filter(Boolean)
+  .slice(0, 4);
+const handle = profile.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+const response = (contact.responseTime || 'Replies within 24h').split(/[,.]/)[0] ?? '';
+---
+
+<section class="relative overflow-hidden border-b border-line/60" aria-labelledby="hero-title">
+  <div class="pointer-events-none absolute inset-0 grid-bg opacity-70" aria-hidden="true"></div>
+  <div class="pointer-events-none absolute inset-0 glow-accent" aria-hidden="true"></div>
+
+  <div class="shell relative grid items-center gap-14 py-16 sm:py-24 lg:grid-cols-[1.08fr_0.92fr] lg:gap-12 lg:py-28">
+    <div class="max-w-2xl">
+      <div class="flex flex-wrap items-center gap-3">
+        <span
+          class="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.07] px-3 py-1.5 font-mono text-[11px] text-accent"
+        >
+          <span class="relative flex h-1.5 w-1.5">
+            {
+              profile.availability.available && (
+                <span
+                  class="absolute inline-flex h-full w-full animate-pulseDot rounded-full bg-accent"
+                  aria-hidden="true"
+                />
+              )
+            }
+            <span
+              class={`relative inline-flex h-1.5 w-1.5 rounded-full ${profile.availability.available ? 'bg-accent' : 'bg-muted'}`}
+            ></span>
+          </span>
+          {profile.availability.label}
+        </span>
+        <span class="font-mono text-[11px] text-muted">{profile.location} · {profile.timezone}</span>
+      </div>
+
+      <p class="mt-8 font-mono text-[12px] tracking-tight text-muted">
+        <span class="text-accent/70">$</span>
+        {profile.name}
+        <span class="text-line">//</span>
+        {profile.title}
+      </p>
+
+      <h1
+        id="hero-title"
+        class="mt-3 text-[2.35rem] font-semibold leading-[1.08] tracking-[-0.03em] sm:text-[3.05rem] lg:text-[3.35rem]"
+      >
+        {profile.tagline}
+      </h1>
+
+      <div class="mt-8 flex flex-wrap items-center gap-3">
+        <a href="#contact" class="btn-primary px-5 py-3">
+          start a project
+          <span aria-hidden="true">↗</span>
+        </a>
+        <a href="#work" class="btn-ghost px-5 py-3">
+          view projects
+          <span class="font-mono text-[11px] text-muted">{String(projectCount).padStart(2, '0')}</span>
+        </a>
+        {
+          site.socials.calendly && (
+            <a href={site.socials.calendly} target="_blank" rel="noopener noreferrer" class="btn-link px-1 py-3">
+              book a 20-min call
+            </a>
+          )
+        }
+      </div>
+
+      <dl class="mt-10 grid max-w-lg grid-cols-3 gap-4 border-t border-line/70 pt-6">
+        <div>
+          <dt class="font-mono text-[10px] uppercase tracking-[0.14em] text-muted">experience</dt>
+          <dd class="mt-1 text-lg font-semibold tracking-tight">
+            {profile.yearsExperience ? `${profile.yearsExperience}+ yrs` : '—'}
+          </dd>
+        </div>
+        <div>
+          <dt class="font-mono text-[10px] uppercase tracking-[0.14em] text-muted">shipped</dt>
+          <dd class="mt-1 text-lg font-semibold tracking-tight">{projectCount} projects</dd>
+        </div>
+        <div>
+          <dt class="font-mono text-[10px] uppercase tracking-[0.14em] text-muted">response</dt>
+          <dd class="mt-1 text-lg font-semibold tracking-tight">{response}</dd>
+        </div>
+      </dl>
+    </div>
+
+    <div class="relative">
+      <div class="pointer-events-none absolute -inset-6 rounded-3xl bg-accent/[0.04] blur-2xl" aria-hidden="true"></div>
+      <div class="terminal relative">
+        <div class="terminal-bar">
+          <span class="terminal-dot bg-[#ff5f56]"></span>
+          <span class="terminal-dot bg-[#ffbd2e]"></span>
+          <span class="terminal-dot bg-[#27c93f]"></span>
+          <span class="ml-2 font-mono text-[11px] text-white/40">bash — {handle}@portfolio</span>
+          <span class="ml-auto hidden font-mono text-[10px] text-white/25 sm:block">80×24</span>
+        </div>
+        <div class="terminal-body" data-typing aria-label={`A terminal showing ${profile.name}, role and availability`}>
+          <div class="space-y-2">
+            <div data-type-line>
+              <p class="flex gap-2">
+                <span class="text-accent" aria-hidden="true">$</span>
+                <span data-type-cmd data-text="whoami" class="text-[#e6edf3]"></span>
+              </p>
+              <p data-type-out class="pl-5 text-[#7ee787]">{profile.name}</p>
+            </div>
+            <div data-type-line>
+              <p class="flex gap-2">
+                <span class="text-accent" aria-hidden="true">$</span>
+                <span data-type-cmd data-text="cat role.txt" class="text-[#e6edf3]"></span>
+              </p>
+              <p data-type-out class="pl-5 text-[#79c0ff]">{profile.title}</p>
+            </div>
+            <div data-type-line>
+              <p class="flex gap-2">
+                <span class="text-accent" aria-hidden="true">$</span>
+                <span data-type-cmd data-text="ls ./stack" class="text-[#e6edf3]"></span>
+              </p>
+              <p data-type-out class="pl-5 text-[#d2a8ff]">{stackGroups.join('  ')}</p>
+            </div>
+            <div data-type-line>
+              <p class="flex gap-2">
+                <span class="text-accent" aria-hidden="true">$</span>
+                <span data-type-cmd data-text="echo $AVAILABILITY" class="text-[#e6edf3]"></span>
+              </p>
+              <p data-type-out class="pl-5 text-[#ffa657]">{profile.availability.label}</p>
+            </div>
+            <div class="flex items-center gap-2 pt-1">
+              <span class="text-accent" aria-hidden="true">$</span>
+              <span class="h-4 w-[7px] animate-blink bg-[#e6edf3]/80" aria-hidden="true"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="mt-3 text-right font-mono text-[10.5px] text-muted/70">
+        psst — <kbd class="rounded border border-line px-1">⌘K</kbd> opens the palette
+      </p>
+    </div>
+  </div>
+</section>
